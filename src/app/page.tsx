@@ -1,3 +1,9 @@
+import CreateFlow from "../components/create/CreateFlow";
+
 export default function Home() {
-  return <div></div>;
+  return (
+    <div>
+      <CreateFlow />
+    </div>
+  );
 }
