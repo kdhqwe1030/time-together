@@ -9,8 +9,7 @@
   --border: #e2e8f0;
 
   --primary: #6366f1;
-  /* --primary-hover: #4f46e5; */
-  --primary-hover: red;
+  --primary-hover: #443dcc;
   --primary-foreground: #ffffff;
   --ring: rgba(99, 102, 241, 0.2);
 }
@@ -83,4 +82,19 @@ body {
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-in-out;
 }
