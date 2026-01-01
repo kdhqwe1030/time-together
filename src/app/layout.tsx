@@ -24,10 +24,12 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </head>
       <body className="min-h-screen antialiased font-pretendard">
-        <main className="mx-auto h-full max-w-3xl bg-background text-text">
+        <div className="flex flex-col h-screen">
           <Header />
-          {children}
-        </main>
+          <main className="flex-1 overflow-auto mx-auto w-full max-w-3xl bg-color-bg">
+            {children}
+          </main>
+        </div>
       </body>
     </html>
   );
