@@ -111,12 +111,13 @@ const Step3When = () => {
           <div className="mt-3 text-sm text-muted">
             편한 날짜 체크해 주세요. 한 달 통째로는 ‘전체 선택’이 더 빨라요 ⚡️
           </div>
-
-          <CalendarOne
-            selected={selectedDates}
-            onSetDate={setDate}
-            onToggleAllInMonth={toggleAllInMonth}
-          />
+          <div className="mt-4 mb-12">
+            <CalendarOne
+              selected={selectedDates}
+              onSetDate={setDate}
+              onToggleAllInMonth={toggleAllInMonth}
+            />
+          </div>
 
           <CreateButton
             disabled={selectedDatesCount === 0 || loading}
