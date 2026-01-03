@@ -89,18 +89,18 @@ const Step6Done = () => {
         </div>
 
         <div className="mt-10 w-full max-w-md grid gap-3">
-          <CreateButton
+          <CreateButton disabled={!shareCode} onClick={onGoVote}>
+            투표 화면으로 이동하기
+          </CreateButton>
+          <button
             disabled={!shareCode}
-            onClick={onGoVote}
+            onClick={onShare}
             className={[
               "w-full rounded-xl py-4 font-semibold transition",
               "border border-border bg-surface text-text hover:bg-surface-2",
               "disabled:opacity-50 disabled:cursor-not-allowed",
             ].join(" ")}
           >
-            투표 화면으로 이동하기
-          </CreateButton>
-          <button disabled={!shareCode} onClick={onShare}>
             링크 공유하기
           </button>
         </div>
