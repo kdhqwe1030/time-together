@@ -115,10 +115,6 @@ const VoteClient = ({ shareCode, initial }: Props) => {
     const refetch = async () => {
       try {
         const r = await fetchResults(shareCode);
-        console.log(r);
-        console.log(r);
-        console.log(r);
-        console.log(r);
         if (alive) setResults(r);
       } catch {
         // 조용히 무시하거나 토스트
@@ -153,27 +149,135 @@ const VoteClient = ({ shareCode, initial }: Props) => {
     };
   }, [mode, shareCode, supabase, initial.event.id]);
 
+  const summary = useMemo(() => {
+    const total = Math.max(results?.totalVoters ?? 0, 1);
+
+    const heat = results?.heatByDateKey ?? {};
+
+    const dateKeys = (
+      allowedKeys ? Array.from(allowedKeys) : Object.keys(heat)
+    ).filter(Boolean);
+
+    dateKeys.sort();
+
+    const start = dateKeys[0] ?? null;
+    const end = dateKeys[dateKeys.length - 1] ?? null;
+
+    const rangeDays =
+      start && end
+        ? Math.floor(
+            (new Date(end).getTime() - new Date(start).getTime()) /
+              (1000 * 60 * 60 * 24)
+          ) + 1
+        : 0;
+
+    const allowedCount = dateKeys.length;
+
+    const periodLabel =
+      start && end
+        ? [
+            `${start.replaceAll("-", ".")} ~ ${end.replaceAll("-", ".")}`,
+            rangeDays === allowedCount
+              ? `(${rangeDays}일)`
+              : `(${rangeDays}일 중 ${allowedCount}일)`,
+          ].join(" ")
+        : null;
+
+    // ---- 유력 후보 로직(너가 정한 규칙) ----
+    const keys = Object.keys(heat);
+
+    let max = 0;
+    for (const k of keys) max = Math.max(max, heat[k] ?? 0);
+
+    const maxKeys = keys.filter((k) => (heat[k] ?? 0) === max);
+
+    // maxCount 날짜가 3개 이상이면 "상위 후보가 많아요"
+    const showTop3 = maxKeys.length > 0 && maxKeys.length < 3;
+
+    const top3 = showTop3
+      ? keys
+          .slice()
+          .sort((a, b) => {
+            const da = heat[a] ?? 0;
+            const db = heat[b] ?? 0;
+            if (db !== da) return db - da; // count desc
+            return a.localeCompare(b); // date asc
+          })
+          .slice(0, 3)
+      : [];
+
+    return { total, periodLabel, showTop3, top3 };
+  }, [results?.heatByDateKey, results?.totalVoters, allowedKeys]);
+
+  function formatDateKeyKR(dateKey: string) {
+    const d = new Date(dateKey + "T00:00:00");
+    const week = ["일", "월", "화", "수", "목", "금", "토"];
+    const m = d.getMonth() + 1;
+    const day = d.getDate();
+    const w = week[d.getDay()];
+    return `${m}월 ${day}일 (${w})`;
+  }
+
   return (
     <div className="p-4 flex flex-col gap-4">
       {/* 모임 정보 카드 */}
-      <section className="rounded-2xl border border-border bg-surface p-4">
+      <section className="rounded-2xl shadow shadow-black/10 bg-surface p-4">
         <div className="flex items-start justify-between gap-3">
-          <div>
-            <div className="text-text font-semibold">{info.title}</div>
+          <div className="min-w-0">
+            {/* 제목 */}
+            <div className="text-text font-semibold truncate">{info.title}</div>
+
+            {/* 기간 (필수) */}
             <div className="mt-1 text-sm text-muted">
-              링크 코드:{" "}
-              <span className="font-medium text-text">{shareCode}</span>
+              <span className="font-light text-text">
+                {summary.periodLabel ?? "-"}
+              </span>
+            </div>
+
+            {/* 유력 후보(조건부) */}
+            <div className="mt-3 text-xs text-muted">
+              {summary.showTop3 ? (
+                <>
+                  유력 후보
+                  <div className="flex gap-4 mt-1">
+                    {summary.top3.map((item) => {
+                      const count = results?.heatByDateKey?.[item] ?? 0; // ✅ 이 날짜 가능한 사람 수
+
+                      return (
+                        <div
+                          key={item}
+                          className="px-3 py-2 border border-border rounded-xl bg-surface flex flex-col items-center"
+                        >
+                          <div className="font-medium text-text text-nowrap">
+                            {formatDateKeyKR(item)}
+                          </div>
+
+                          <div className="mt-0.5 text-xs text-muted">
+                            <span className="text-primary/90 font-semibold">
+                              {count}명
+                            </span>
+                            가능
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              ) : (
+                <>상위 후보가 많아요. 달력에서 편한 날을 골라주세요.</>
+              )}
             </div>
           </div>
 
-          <div className="shrink-0 px-3 py-1 text-xs font-semibold text-text">
+          <div className="shrink-0">
             <Tag text={`참여자 ${results?.totalVoters ?? 0}명`} />
           </div>
         </div>
       </section>
+
       {/* 이름 입력 카드 */}
       {!mode ? (
-        <section className="rounded-2xl border border-border bg-surface p-4">
+        <section className="rounded-2xl shadow shadow-black/10 bg-surface p-4">
           <div className="text-sm font-semibold text-text">이름</div>
           {!isMod ? (
             <input
@@ -192,7 +296,7 @@ const VoteClient = ({ shareCode, initial }: Props) => {
             />
           ) : (
             <div className="mt-2 text-lg flex items-center gap-4">
-              {name}{" "}
+              {name}
               <MdMode
                 className="text-primary"
                 onClick={() => setIsMode(false)}
@@ -203,9 +307,9 @@ const VoteClient = ({ shareCode, initial }: Props) => {
       ) : (
         <></>
       )}
-      <div className="mt-4 mb-6">
+      <div className="mb-6">
         {!mode ? (
-          <div className="bg-surface p-4 rounded-2xl border border-border bg-surface-1">
+          <div className="bg-surface p-4 rounded-2xl shadow shadow-black/10">
             <div className="flex items-center gap-3 mb-4">
               <h1 className="text-text font-semibold">날짜 선택</h1>
               <span className="text-muted text-xs">
