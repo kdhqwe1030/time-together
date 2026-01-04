@@ -7,10 +7,14 @@ const CalendarOne = ({
   selected,
   onSetDate,
   onToggleAllInMonth,
+  allowedKeys,
+  monthBounds,
 }: {
   selected: Set<string>;
   onSetDate: (key: string, makeSelected: boolean) => void;
   onToggleAllInMonth: (month: Date, makeSelected: boolean) => void;
+  allowedKeys?: Set<string>;
+  monthBounds?: { minMonth: Date; maxMonth: Date } | null;
 }) => {
   const [month, setMonth] = useState(() => {
     const now = new Date();
@@ -92,31 +96,47 @@ const CalendarOne = ({
   const handlePointerUp = () => endDrag();
   const handlePointerCancel = () => endDrag();
   const handlePointerLeave = () => endDrag();
+  const canPrev = useMemo(() => {
+    if (!monthBounds) return true;
+    const prev = addMonths(month, -1);
+    return prev >= monthBounds.minMonth;
+  }, [month, monthBounds]);
+
+  const canNext = useMemo(() => {
+    if (!monthBounds) return true;
+    const next = addMonths(month, 1);
+    return next <= monthBounds.maxMonth;
+  }, [month, monthBounds]);
 
   return (
-    <div className="mt-4 rounded-2xl border border-border bg-surface-1 p-4 mb-12">
+    <div className="bg-surface p-4 rounded-2xl bg-surface-1">
       {/* 헤더 (월 이동 + 전체 선택) */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setMonth((m) => addMonths(m, -1))}
-            className="h-8 w-8 rounded-lg border border-border text-muted flex justify-center items-center"
-            aria-label="이전 달"
-          >
-            <IoIosArrowBack />
-          </button>
+          {canPrev && (
+            <button
+              type="button"
+              onClick={() => setMonth((m) => addMonths(m, -1))}
+              className="h-8 w-8 rounded-lg border border-border text-muted flex justify-center items-center  disabled:opacity-40 disabled:cursor-not-allowed"
+              aria-label="이전 달"
+              disabled={!canPrev}
+            >
+              <IoIosArrowBack />
+            </button>
+          )}
 
           <div className="font-semibold text-text">{monthTitle}</div>
-
-          <button
-            type="button"
-            onClick={() => setMonth((m) => addMonths(m, 1))}
-            className="h-8 w-8 rounded-lg border border-border text-muted flex justify-center items-center"
-            aria-label="다음 달"
-          >
-            <IoIosArrowForward />
-          </button>
+          {canNext && (
+            <button
+              type="button"
+              onClick={() => setMonth((m) => addMonths(m, 1))}
+              className="h-8 w-8 rounded-lg border border-border text-muted flex justify-center items-center disabled:opacity-40 disabled:cursor-not-allowed"
+              aria-label="다음 달"
+              disabled={!canNext}
+            >
+              <IoIosArrowForward />
+            </button>
+          )}
         </div>
 
         <button
@@ -163,14 +183,15 @@ const CalendarOne = ({
           if (!d) return <div key={`blank-${i}`} className="h-10" />;
 
           const key = toKey(d);
+          const isAllowed = allowedKeys?.has(key);
           const selectedThis = selected.has(key);
           const dow = d.getDay();
-
           return (
             <button
               key={key}
               type="button"
               data-date-key={key}
+              disabled={!isAllowed}
               onPointerDown={(e) => {
                 e.preventDefault();
                 ignoreClickRef.current = true;
@@ -201,7 +222,9 @@ const CalendarOne = ({
               }}
               className={[
                 "h-10 mx-auto w-10 rounded-xl text-sm transition",
-                selectedThis
+                !isAllowed
+                  ? "text-muted/40 opacity-40 cursor-not-allowed"
+                  : selectedThis
                   ? "bg-primary text-primary-foreground"
                   : "hover:bg-surface-2",
                 dow === 0 || dow === 6
