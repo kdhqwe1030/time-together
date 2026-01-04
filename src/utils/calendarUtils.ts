@@ -40,8 +40,8 @@ export function strengthForRatio(r: number) {
   return clamp(0.15 + 0.85 * r, 0, 1);
 }
 
-// ✅ total 대비(비율)로 범례 구간을 만들고,
-// ✅ 각 구간 색 진하기(strength)는 "그 구간의 상한 참여율(max/total)"로 계산
+// total 대비(비율)로 범례 구간을 만들고,
+// 각 구간 색 진하기(strength)는 "그 구간의 상한 참여율(max/total)"로 계산
 export function buildHeatBuckets(total: number): HeatBucket[] {
   const t = Math.max(total, 1);
 
@@ -108,7 +108,7 @@ export function buildHeatBuckets(total: number): HeatBucket[] {
     out.push({
       min,
       max,
-      strength: strengthForRatio(max / t), // ✅ 구간 상한 참여율
+      strength: strengthForRatio(max / t), // 구간 상한 참여율
       label: min === max ? `${min}/${t}명` : `${min}-${max}/${t}명`,
     });
   }
@@ -137,4 +137,14 @@ export function getLegendSwatchStyle(strength: number): React.CSSProperties {
 
 export function clampInt(v: number, min: number, max: number) {
   return Math.max(min, Math.min(max, Math.trunc(v)));
+}
+
+//2026-01-05 -> 1월 5일(월)로 변경
+export function formatDateKeyKR(dateKey: string) {
+  const d = new Date(dateKey + "T00:00:00");
+  const week = ["일", "월", "화", "수", "목", "금", "토"];
+  const m = d.getMonth() + 1;
+  const day = d.getDate();
+  const w = week[d.getDay()];
+  return `${m}월 ${day}일 (${w})`;
 }

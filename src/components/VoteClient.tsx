@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import type { VoteInitialData } from "../types/vote";
+import type { VoteInitialData, VoteResultsResponse } from "../types/vote";
 import CalendarOne from "./grid/CalendarOne";
 import { MdMode } from "react-icons/md";
 
@@ -9,13 +9,9 @@ import Tag from "./Tag";
 import CreateButton from "./create/ui/CreateButton";
 import ResultCalendarOne from "./grid/ResultCalendarOne";
 import { loadIdentity, saveName } from "../lib/getCreateVoterToken";
-import {
-  commitVotes,
-  fetchResults,
-  VoteResultsResponse,
-} from "../lib/api/voteEvent";
+import { commitVotes, fetchMyVotes, fetchResults } from "../lib/api/voteEvent";
 import { createSupabaseBrowser } from "../lib/supabase/supabaseBrowser";
-import { getMonthDays, toKey } from "../utils/calendarUtils";
+import { formatDateKeyKR, getMonthDays, toKey } from "../utils/calendarUtils";
 import NamesTooltip from "./NamesTooltip";
 
 type Props = {
@@ -24,24 +20,21 @@ type Props = {
 };
 
 const VoteClient = ({ shareCode, initial }: Props) => {
-  const [loading, setloading] = useState(false);
-  const [mode, setMode] = useState(false); //f:투표 t:결과
-  const [name, setName] = useState("");
-  const [voterToken, setVoterToken] = useState<string>("");
-  const [isMod, setIsMode] = useState(false);
-  useEffect(() => {
-    const { voterToken, displayName } = loadIdentity(shareCode);
+  const supabase = useMemo(() => createSupabaseBrowser(), []); //realitime구독을 위한 supabse brower용
 
-    setVoterToken(voterToken);
-    setName(displayName);
-    if (displayName !== "") setIsMode(true);
-  }, [shareCode]);
-
-  const info = initial.event;
+  const [voterToken, setVoterToken] = useState<string>(""); //내 token
   const [selectedDates, setSelectedDates] = useState<Set<string>>(
     () => new Set()
-  );
+  ); //선택 날짜
+  const [mode, setMode] = useState(false); // 페이지 관련 상태 f:투표 t:결과
+  const [name, setName] = useState(""); // 이름
+  const [isMod, setIsMode] = useState(false); //이름 수정
+  const [results, setResults] = useState<VoteResultsResponse | null>(null); //모임 정보에서의 유력후보 결과
+  const [loading, setloading] = useState(false); // 결과보기 loading
 
+  const info = initial.event; //모임 정보를 위한 데이터
+  const MANY_TIE_THRESHOLD = 4; // 유력후보 관련 상수
+  //달력 선택 관련 props로 전달해줄 함수
   const setDate = (key: string, makeSelected: boolean) => {
     setSelectedDates((prev) => {
       const n = new Set(prev);
@@ -96,15 +89,64 @@ const VoteClient = ({ shareCode, initial }: Props) => {
     }
     return m;
   }, [initial.slots]);
-
+  const dateBySlotId = useMemo(() => {
+    const m = new Map<string, string>(); // slot uuid -> "YYYY-MM-DD"
+    for (const s of initial.slots) {
+      if (s.slot_type === "DATE" && s.date) m.set(s.id, s.date);
+    }
+    return m;
+  }, [initial.slots]);
   const selectedSlotIds = useMemo(() => {
     return [...selectedDates]
       .map((d) => slotIdByDate.get(d))
       .filter(Boolean) as string[];
   }, [selectedDates, slotIdByDate]);
 
-  const supabase = useMemo(() => createSupabaseBrowser(), []);
-  const [results, setResults] = useState<VoteResultsResponse | null>(null);
+  useEffect(() => {
+    if (!shareCode) return;
+    if (!voterToken) return;
+
+    let alive = true;
+
+    (async () => {
+      try {
+        const my = await fetchMyVotes(shareCode, voterToken);
+        if (!alive) return;
+        if (my.slotIds.length > 0) setMode(true);
+
+        //  이름도 서버값으로 보강(로컬에 없을 때만)
+        if ((!name || name.trim() === "") && my.displayName) {
+          setName(my.displayName);
+          setIsMode(true);
+          saveName(shareCode, my.displayName); // 로컬에도 다시 저장
+        }
+
+        // slotIds -> dateKey로 복구
+        const next = new Set<string>();
+        for (const slotId of my.slotIds) {
+          const dateKey = dateBySlotId.get(slotId);
+          if (dateKey) next.add(dateKey);
+        }
+        setSelectedDates(next);
+      } catch {
+        // 조용히 무시(토스트 원하면 여기서)
+      }
+    })();
+
+    return () => {
+      alive = false;
+    };
+    // name은 의존성에 넣으면 name set 때문에 재호출될 수 있어서 의도적으로 제외하는 편이 깔끔함
+  }, [shareCode, voterToken, dateBySlotId]);
+
+  //내가 이전에 접속했었는지
+  useEffect(() => {
+    const { voterToken, displayName } = loadIdentity(shareCode);
+
+    setVoterToken(voterToken);
+    setName(displayName);
+    if (displayName !== "") setIsMode(true);
+  }, [shareCode]);
 
   // 결과 첫 로드 + realtime refetch
   useEffect(() => {
@@ -151,15 +193,12 @@ const VoteClient = ({ shareCode, initial }: Props) => {
   }, [mode, shareCode, supabase, initial.event.id]);
 
   const summary = useMemo(() => {
-    const total = Math.max(results?.totalVoters ?? 0, 1);
-
     const heat = results?.heatByDateKey ?? {};
 
-    const dateKeys = (
-      allowedKeys ? Array.from(allowedKeys) : Object.keys(heat)
-    ).filter(Boolean);
-
-    dateKeys.sort();
+    // 기간 표기: allowedKeys 기반
+    const dateKeys = (allowedKeys ? Array.from(allowedKeys) : Object.keys(heat))
+      .filter(Boolean)
+      .sort();
 
     const start = dateKeys[0] ?? null;
     const end = dateKeys[dateKeys.length - 1] ?? null;
@@ -184,45 +223,64 @@ const VoteClient = ({ shareCode, initial }: Props) => {
           ].join(" ")
         : null;
 
-    // ---- 유력 후보 로직(너가 정한 규칙) ----
-    const keys = Object.keys(heat);
+    // ---- 유력 후보: "랭크 그룹" 방식 ----
+    // count별로 날짜 그룹핑 (0명은 후보에서 제외)
+    const byCount = new Map<number, string[]>();
+    for (const k of dateKeys) {
+      const c = heat[k] ?? 0;
+      if (c <= 0) continue;
+      const arr = byCount.get(c) ?? [];
+      arr.push(k);
+      byCount.set(c, arr);
+    }
 
-    let max = 0;
-    for (const k of keys) max = Math.max(max, heat[k] ?? 0);
+    const countsDesc = Array.from(byCount.keys()).sort((a, b) => b - a);
 
-    const maxKeys = keys.filter((k) => (heat[k] ?? 0) === max);
+    // 아직 투표가 없으면 후보 없음
+    if (countsDesc.length === 0) {
+      return {
+        periodLabel,
+        showTop3: false,
+        tooManyTop: false,
+        top3: [] as string[],
+      };
+    }
 
-    // maxCount 날짜가 3개 이상이면 "상위 후보가 많아요"
-    const showTop3 = maxKeys.length > 0 && maxKeys.length <= 3;
+    // 1등 동점이 너무 많으면 → "상위 후보가 많아요"
+    const topCount = countsDesc[0];
+    const topDates = (byCount.get(topCount) ?? []).slice().sort();
+    const tooManyTop = topDates.length >= MANY_TIE_THRESHOLD;
 
-    const top3 = showTop3
-      ? keys
-          .slice()
-          .sort((a, b) => {
-            const da = heat[a] ?? 0;
-            const db = heat[b] ?? 0;
-            if (db !== da) return db - da; // count desc
-            return a.localeCompare(b); // date asc
-          })
-          .slice(0, 3)
-      : [];
+    if (tooManyTop) {
+      return {
+        periodLabel,
+        showTop3: false,
+        tooManyTop: true,
+        top3: [] as string[],
+      };
+    }
 
-    return { total, periodLabel, showTop3, top3 };
-  }, [results?.heatByDateKey, results?.totalVoters, allowedKeys]);
+    // 랭크 그룹을 통째로 채우되, 3개를 넘기면 그 랭크는 버리고 종료
+    const picked: string[] = [];
+    for (const c of countsDesc) {
+      const group = (byCount.get(c) ?? []).slice().sort();
+      if (picked.length + group.length > 3) break; // ✅ 2등/3등이 너무 많으면 여기서 컷
+      picked.push(...group);
+      if (picked.length === 3) break;
+    }
 
-  function formatDateKeyKR(dateKey: string) {
-    const d = new Date(dateKey + "T00:00:00");
-    const week = ["일", "월", "화", "수", "목", "금", "토"];
-    const m = d.getMonth() + 1;
-    const day = d.getDate();
-    const w = week[d.getDay()];
-    return `${m}월 ${day}일 (${w})`;
-  }
+    return {
+      periodLabel,
+      showTop3: picked.length > 0,
+      tooManyTop: false,
+      top3: picked,
+    };
+  }, [results?.heatByDateKey, allowedKeys]);
 
   return (
     <div className="p-4 flex flex-col gap-4">
       {/* 모임 정보 카드 */}
-      <section className="rounded-2xl shadow shadow-black/10 bg-surface p-4">
+      <section className="rounded-2xl shadow shadow-black/10 bg-surface p-4 animate-fade-in">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             {/* 제목 */}
@@ -242,8 +300,8 @@ const VoteClient = ({ shareCode, initial }: Props) => {
                   유력 후보
                   <div className="flex gap-4 mt-1">
                     {summary.top3.map((item) => {
-                      const count = results?.heatByDateKey?.[item] ?? 0; // ✅ 이 날짜 가능한 사람 수
-                      const names = results?.votersByDateKey?.[item] ?? [];
+                      const count = results?.heatByDateKey?.[item] ?? 0; // 이 날짜 가능한 사람 수
+                      const names = results?.votersByDateKey?.[item] ?? []; //툴팁을 위한 이름
                       return (
                         <NamesTooltip
                           key={item}
@@ -283,8 +341,10 @@ const VoteClient = ({ shareCode, initial }: Props) => {
                     })}
                   </div>
                 </>
-              ) : (
+              ) : summary.tooManyTop ? (
                 <>상위 후보가 많아요. 달력에서 편한 날을 골라주세요.</>
+              ) : (
+                <>아직 투표가 없어요</>
               )}
             </div>
           </div>
@@ -297,7 +357,7 @@ const VoteClient = ({ shareCode, initial }: Props) => {
 
       {/* 이름 입력 카드 */}
       {!mode ? (
-        <section className="rounded-2xl shadow shadow-black/10 bg-surface p-4">
+        <section className="rounded-2xl shadow shadow-black/10 bg-surface p-4 animate-fade-in">
           <div className="text-sm font-semibold text-text">이름</div>
           {!isMod ? (
             <input
@@ -329,7 +389,7 @@ const VoteClient = ({ shareCode, initial }: Props) => {
       )}
       <div className="mb-6">
         {!mode ? (
-          <div className="bg-surface p-4 rounded-2xl shadow shadow-black/10">
+          <section className="bg-surface p-4 rounded-2xl shadow shadow-black/10 animate-fade-in">
             <div className="flex items-center gap-3 mb-4">
               <h1 className="text-text font-semibold">날짜 선택</h1>
               <span className="text-muted text-xs">
@@ -348,7 +408,7 @@ const VoteClient = ({ shareCode, initial }: Props) => {
                 {selectedDates.size}일 선택
               </span>
             </div>
-          </div>
+          </section>
         ) : (
           <ResultCalendarOne
             allowedKeys={allowedKeys}
