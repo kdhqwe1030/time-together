@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import type { VoteInitialData } from "../types/vote";
-import CalendarOne, { getMonthDays, toKey } from "./grid/CalendarOne";
+import CalendarOne from "./grid/CalendarOne";
 import { MdMode } from "react-icons/md";
 
 import Tag from "./Tag";
@@ -15,6 +15,7 @@ import {
   VoteResultsResponse,
 } from "../lib/api/voteEvent";
 import { createSupabaseBrowser } from "../lib/supabase/supabaseBrowser";
+import { getMonthDays, toKey } from "../utils/calendarUtils";
 
 type Props = {
   shareCode: string;

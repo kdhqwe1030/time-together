@@ -4,10 +4,11 @@ import { useState } from "react";
 import { useCreateStore } from "@/src/stores/createStore";
 import QuestionHeader from "../ui/QuestionHeader";
 import CreateButton from "../ui/CreateButton";
-import CalendarOne, { getMonthDays, toKey } from "../../grid/CalendarOne";
+import CalendarOne from "../../grid/CalendarOne";
 import CalendarRecurring from "../../grid/CalendarRecurring";
 import { createEvent } from "@/src/lib/api/createEventClient";
 import type { CreateMode } from "@/src/stores/createStore";
+import { getMonthDays, toKey } from "@/src/utils/calendarUtils";
 
 const Step3When = () => {
   const title = useCreateStore((s) => s.title);

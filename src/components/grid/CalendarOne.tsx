@@ -1,5 +1,6 @@
 "use client";
 
+import { addMonths, getMonthDays, toKey } from "@/src/utils/calendarUtils";
 import React, { useMemo, useRef, useState } from "react";
 import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
 
@@ -246,27 +247,3 @@ const CalendarOne = ({
   );
 };
 export default CalendarOne;
-
-function addMonths(base: Date, delta: number) {
-  const d = new Date(base);
-  d.setMonth(d.getMonth() + delta);
-  d.setDate(1);
-  return d;
-}
-export function toKey(d: Date) {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
-export function getMonthDays(month: Date) {
-  const y = month.getFullYear();
-  const m = month.getMonth();
-  const first = new Date(y, m, 1);
-  const last = new Date(y, m + 1, 0);
-  const days: Date[] = [];
-  for (let i = 1; i <= last.getDate(); i++) {
-    days.push(new Date(y, m, i));
-  }
-  return { first, days };
-}

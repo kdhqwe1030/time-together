@@ -1,8 +1,15 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { getMonthDays } from "./CalendarOne";
 import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
+import {
+  addMonths,
+  buildHeatBuckets,
+  getLegendSwatchStyle,
+  getMonthDays,
+  strengthFromCount,
+  toKey,
+} from "@/src/utils/calendarUtils";
 
 type Props = {
   allowedKeys?: Set<string>;
@@ -37,6 +44,7 @@ const ResultCalendarOne = ({
   }, [monthBounds?.minMonth?.getTime()]);
 
   const { first, days } = useMemo(() => getMonthDays(month), [month]);
+  const buckets = useMemo(() => buildHeatBuckets(totalVoters), [totalVoters]);
 
   const monthTitle = useMemo(() => {
     const y = month.getFullYear();
@@ -72,14 +80,12 @@ const ResultCalendarOne = ({
     anchor: HTMLElement;
   }>(null);
 
-  const getRatio = (dateKey: string) =>
-    clamp((heat[dateKey] ?? 0) / denom, 0, 1);
+  const getCellStyleByCount = (
+    count: number
+  ): React.CSSProperties | undefined => {
+    const strength = strengthFromCount(count, totalVoters);
+    if (strength <= 0) return undefined;
 
-  const getCellStyle = (ratio: number): React.CSSProperties | undefined => {
-    if (ratio <= 0) return undefined;
-
-    // 최소 채도 + 비율 반영
-    const strength = 0.15 + ratio * 0.85; // 0.15~1.0
     return {
       backgroundColor: `color-mix(in srgb, white ${
         (1 - strength) * 100
@@ -88,8 +94,10 @@ const ResultCalendarOne = ({
     };
   };
 
-  const getTextClass = (ratio: number) =>
-    ratio >= 0.5 ? "text-white" : "text-text"; // “배경 진해지면 글자 흰색”
+  const getTextClassByCount = (count: number) => {
+    const strength = strengthFromCount(count, totalVoters);
+    return strength >= 0.55 ? "text-white" : "text-text";
+  };
 
   const wrapRef = useRef<HTMLDivElement>(null);
 
@@ -105,7 +113,29 @@ const ResultCalendarOne = ({
   return (
     <>
       <section className="bg-surface p-4 rounded-2xl shadow shadow-black/10 mb-4">
-        <h1 className="text-text font-medium text-sm">참여 현황</h1>
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="text-text font-medium text-sm">참여 현황</h1>
+
+          {/* 범례 */}
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+            {buckets.map((b) => (
+              <div
+                key={b.label}
+                className="flex items-center gap-2 text-xs text-muted"
+              >
+                <span
+                  className="h-3 w-3 rounded-sm border border-border"
+                  style={
+                    b.strength <= 0
+                      ? undefined
+                      : getLegendSwatchStyle(b.strength)
+                  }
+                />
+                <span>{b.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
       </section>
       <div className="bg-surface p-4 rounded-2xl shadow shadow-black/10">
         <div className="flex items-center gap-3 mb-4">
@@ -171,10 +201,8 @@ const ResultCalendarOne = ({
 
               const key = toKey(d);
               const isAllowed = allowedKeys ? allowedKeys.has(key) : true;
-
-              const ratio = isAllowed ? getRatio(key) : 0;
-              const style = isAllowed ? getCellStyle(ratio) : undefined;
               const count = isAllowed ? heat[key] ?? 0 : 0;
+              const style = isAllowed ? getCellStyleByCount(count) : undefined;
               const names = isAllowed ? votersByDateKey?.[key] ?? [] : [];
               return (
                 <div
@@ -197,8 +225,8 @@ const ResultCalendarOne = ({
                     className={[
                       "h-10 mx-auto w-10 rounded-xl text-sm transition border",
                       isAllowed
-                        ? `${getTextClass(
-                            ratio
+                        ? `${getTextClassByCount(
+                            count
                           )} border-border hover:scale-[1.02] active:scale-[0.98]`
                         : "text-muted/40 opacity-40 cursor-not-allowed border-border",
                     ].join(" ")}
@@ -247,21 +275,3 @@ const ResultCalendarOne = ({
 };
 
 export default ResultCalendarOne;
-
-function addMonths(base: Date, delta: number) {
-  const d = new Date(base);
-  d.setMonth(d.getMonth() + delta);
-  d.setDate(1);
-  return d;
-}
-
-export function toKey(d: Date) {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
-
-function clamp(v: number, min: number, max: number) {
-  return Math.max(min, Math.min(max, v));
-}
