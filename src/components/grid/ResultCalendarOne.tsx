@@ -10,6 +10,7 @@ import {
   strengthFromCount,
   toKey,
 } from "@/src/utils/calendarUtils";
+import NamesTooltip from "../NamesTooltip";
 
 type Props = {
   allowedKeys?: Set<string>;
@@ -210,75 +211,48 @@ const ResultCalendarOne = ({
                   key={key}
                   className="relative h-10 flex justify-center"
                 >
-                  <button
-                    key={key}
-                    type="button"
-                    disabled={!isAllowed}
-                    onClick={(e) => {
-                      if (!isAllowed) return;
-                      setOpen((prev) =>
-                        prev?.dateKey === key
-                          ? null
-                          : { dateKey: key, anchor: e.currentTarget }
-                      );
-                    }}
-                    className={[
-                      "h-10 mx-auto w-10 rounded-xl transition border",
-                      "flex flex-col items-center justify-center",
-                      isAllowed
-                        ? `${getTextClassByCount(
-                            count
-                          )} border-border hover:scale-[1.02] active:scale-[0.98]`
-                        : "text-muted/40 opacity-40 cursor-not-allowed border-border",
-                    ].join(" ")}
-                    style={style}
-                    title={isAllowed ? `${count}명` : undefined}
+                  <NamesTooltip
+                    names={names}
+                    headerText={`${names.length}명 참여`}
+                    emptyText="아직 없음"
                   >
-                    {/* 날짜 */}
-                    <span className="text-sm leading-none">{d.getDate()}</span>
-
-                    {/* 참여자 수*/}
-                    <span
-                      className={[
-                        "mt-0.5 text-[10px] leading-none",
-                        // 배경 진하면 숫자도 흰색 계열로
-                        getTextClassByCount(count) === "text-white"
-                          ? "text-white/90"
-                          : "text-muted",
-                      ].join(" ")}
-                    >
-                      {count}/{totalVoters}
-                    </span>
-                  </button>
-
-                  {/* 말풍선 */}
-                  {open?.dateKey === key && (
-                    <div
-                      className="absolute left-1/2 top-11 -translate-x-1/2 z-50
-                     min-w-35 max-w-55
-                     rounded-xl border border-border bg-surface p-3 shadow-lg"
-                    >
-                      <div className="text-xs text-muted mb-2">
-                        {names.length}명 참여
-                      </div>
-
-                      <div className="max-h-32 overflow-auto text-sm text-text space-y-1">
-                        {names.length === 0 ? (
-                          <div className="text-muted">아직 없음</div>
-                        ) : (
-                          names.map((n, idx) => (
-                            <div key={`${n}-${idx}`}>{n}</div>
-                          ))
-                        )}
-                      </div>
-
-                      {/* 말풍선 꼬리(선택) */}
-                      <div
-                        className="absolute left-1/2 -top-1 h-2 w-2 -translate-x-1/2 rotate-45
-                       border-l border-t border-border bg-surface"
-                      />
-                    </div>
-                  )}
+                    {({ toggle }) => (
+                      <button
+                        key={key}
+                        type="button"
+                        disabled={!isAllowed}
+                        onClick={() => {
+                          if (!isAllowed) return;
+                          toggle();
+                        }}
+                        className={[
+                          "h-10 mx-auto w-10 rounded-xl transition border",
+                          "flex flex-col items-center justify-center",
+                          isAllowed
+                            ? `${getTextClassByCount(
+                                count
+                              )} border-border hover:scale-[1.02] active:scale-[0.98]`
+                            : "text-muted/40 opacity-40 cursor-not-allowed border-border",
+                        ].join(" ")}
+                        style={style}
+                        title={isAllowed ? `${count}명` : undefined}
+                      >
+                        <span className="text-sm leading-none">
+                          {d.getDate()}
+                        </span>
+                        <span
+                          className={[
+                            "mt-0.5 text-[10px] leading-none",
+                            getTextClassByCount(count) === "text-white"
+                              ? "text-white/90"
+                              : "text-muted",
+                          ].join(" ")}
+                        >
+                          {count}/{totalVoters}
+                        </span>
+                      </button>
+                    )}
+                  </NamesTooltip>
                 </div>
               );
             })}

@@ -16,6 +16,7 @@ import {
 } from "../lib/api/voteEvent";
 import { createSupabaseBrowser } from "../lib/supabase/supabaseBrowser";
 import { getMonthDays, toKey } from "../utils/calendarUtils";
+import NamesTooltip from "./NamesTooltip";
 
 type Props = {
   shareCode: string;
@@ -192,7 +193,7 @@ const VoteClient = ({ shareCode, initial }: Props) => {
     const maxKeys = keys.filter((k) => (heat[k] ?? 0) === max);
 
     // maxCount 날짜가 3개 이상이면 "상위 후보가 많아요"
-    const showTop3 = maxKeys.length > 0 && maxKeys.length < 3;
+    const showTop3 = maxKeys.length > 0 && maxKeys.length <= 3;
 
     const top3 = showTop3
       ? keys
@@ -242,23 +243,42 @@ const VoteClient = ({ shareCode, initial }: Props) => {
                   <div className="flex gap-4 mt-1">
                     {summary.top3.map((item) => {
                       const count = results?.heatByDateKey?.[item] ?? 0; // ✅ 이 날짜 가능한 사람 수
-
+                      const names = results?.votersByDateKey?.[item] ?? [];
                       return (
-                        <div
+                        <NamesTooltip
                           key={item}
-                          className="px-3 py-2 border border-border rounded-xl bg-surface flex flex-col items-center"
+                          names={names}
+                          headerText=""
+                          emptyText="아직 없음"
                         >
-                          <div className="font-medium text-text text-nowrap">
-                            {formatDateKeyKR(item)}
-                          </div>
+                          {({ toggle }) => (
+                            <div
+                              role="button"
+                              tabIndex={0}
+                              onClick={toggle}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter" || e.key === " ")
+                                  toggle();
+                              }}
+                              className={[
+                                "px-3 py-2 border border-border rounded-xl bg-surface",
+                                "flex flex-col items-center cursor-pointer select-none",
+                                "hover:bg-surface/60 active:scale-[0.98] transition",
+                              ].join(" ")}
+                            >
+                              <div className="font-medium text-text text-nowrap">
+                                {formatDateKeyKR(item)}
+                              </div>
 
-                          <div className="mt-0.5 text-xs text-muted">
-                            <span className="text-primary/90 font-semibold">
-                              {count}명
-                            </span>
-                            가능
-                          </div>
-                        </div>
+                              <div className="mt-0.5 text-xs text-muted">
+                                <span className="text-primary/90 font-semibold">
+                                  {count}명
+                                </span>{" "}
+                                가능
+                              </div>
+                            </div>
+                          )}
+                        </NamesTooltip>
                       );
                     })}
                   </div>
