@@ -4,10 +4,11 @@ import { useState } from "react";
 import { useCreateStore } from "@/src/stores/createStore";
 import QuestionHeader from "../ui/QuestionHeader";
 import CreateButton from "../ui/CreateButton";
-import CalendarOne, { getMonthDays, toKey } from "./CalendarOne";
-import CalendarRecurring from "./CalendarRecurring";
+import CalendarOne from "../../grid/CalendarOne";
+import CalendarRecurring from "../../grid/CalendarRecurring";
 import { createEvent } from "@/src/lib/api/createEventClient";
 import type { CreateMode } from "@/src/stores/createStore";
+import { getMonthDays, toKey } from "@/src/utils/calendarUtils";
 
 const Step3When = () => {
   const title = useCreateStore((s) => s.title);
@@ -81,7 +82,7 @@ const Step3When = () => {
     const datesArr = [...selectedDates];
     setSelectedDatesStore(datesArr);
 
-    // ✅ 14일 이상이면 Step3에서 바로 생성 (날짜만)
+    // 14일 이상이면 Step3에서 바로 생성 (날짜만)
     if (datesArr.length >= 14) {
       await createAndGoDone("ONE_DATE", {
         title,
@@ -91,14 +92,14 @@ const Step3When = () => {
       return;
     }
 
-    // ✅ 14일 미만이면 Step4로 (시간 받을지)
+    //  14일 미만이면 Step4로 (시간 받을지)
     goTo(4);
   };
 
   const onNextRecurring = () => {
     const daysArr = [...selectedDays];
     setSelectedWeekdaysStore(daysArr);
-    // ✅ 정기는 무조건 시간까지 → Step5로
+    //  정기는 무조건 시간까지 → Step5로
     goTo(5);
   };
 
@@ -111,12 +112,13 @@ const Step3When = () => {
           <div className="mt-3 text-sm text-muted">
             편한 날짜 체크해 주세요. 한 달 통째로는 ‘전체 선택’이 더 빨라요 ⚡️
           </div>
-
-          <CalendarOne
-            selected={selectedDates}
-            onSetDate={setDate}
-            onToggleAllInMonth={toggleAllInMonth}
-          />
+          <div className="mt-4 mb-12">
+            <CalendarOne
+              selected={selectedDates}
+              onSetDate={setDate}
+              onToggleAllInMonth={toggleAllInMonth}
+            />
+          </div>
 
           <CreateButton
             disabled={selectedDatesCount === 0 || loading}

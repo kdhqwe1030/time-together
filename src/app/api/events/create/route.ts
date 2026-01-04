@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServer } from "@/src/lib/supabase/supabaseServer";
 
-type Mode = "ONE_DATE" | "ONE_DATETIME" | "REC_WEEKDAY" | "REC_WEEKDAYTIME";
+type Mode = "ONE_DATE" | "ONE_DATETIME" | "REC_WEEKDAYTIME";
 type TimeValue = `${string}:${string}`;
 
 function toMinutes(t: TimeValue) {
@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
 
   // mode별 입력 검증
   const needDates = mode === "ONE_DATE" || mode === "ONE_DATETIME";
-  const needWeekdays = mode === "REC_WEEKDAY" || mode === "REC_WEEKDAYTIME";
+  const needWeekdays = mode === "REC_WEEKDAYTIME";
   const needTime = mode === "ONE_DATETIME" || mode === "REC_WEEKDAYTIME";
 
   if (needDates && (!Array.isArray(dates) || dates.length === 0)) {
@@ -113,30 +113,10 @@ export async function POST(req: NextRequest) {
 
   // 이후 단계 실패 시 롤백(삭제)할 수 있게 준비
   const rollback = async (reason: string) => {
+    await supabase.from("event_slots").delete().eq("event_id", eventId);
     await supabase.from("events").delete().eq("id", eventId);
     return NextResponse.json({ error: reason }, { status: 500 });
   };
-
-  // 2) 후보 저장 (dates/weekdays)
-  if (needDates) {
-    const rows = (dates as string[]).map((d) => ({
-      event_id: eventId,
-      date: d,
-    }));
-    const { error } = await supabase.from("event_dates").insert(rows);
-    if (error)
-      return rollback(`Failed to insert event_dates: ${error.message}`);
-  }
-
-  if (needWeekdays) {
-    const rows = (weekdays as number[]).map((w) => ({
-      event_id: eventId,
-      weekday: w,
-    }));
-    const { error } = await supabase.from("event_weekdays").insert(rows);
-    if (error)
-      return rollback(`Failed to insert event_weekdays: ${error.message}`);
-  }
 
   // 3) 슬롯 생성 (색칠 단위)
   const slots: any[] = [];
@@ -163,16 +143,6 @@ export async function POST(req: NextRequest) {
           start_min: t,
         });
       }
-    }
-  }
-
-  if (mode === "REC_WEEKDAY") {
-    for (const w of weekdays) {
-      slots.push({
-        event_id: eventId,
-        slot_type: "WEEKDAY",
-        weekday: w,
-      });
     }
   }
 

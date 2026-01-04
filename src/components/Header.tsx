@@ -1,5 +1,6 @@
 "use client";
 import { usePathname } from "next/navigation";
+import Image from "next/image";
 
 const Header = () => {
   const pathname = usePathname();
@@ -27,8 +28,8 @@ const Header = () => {
     await navigator.clipboard.writeText(shareUrl);
   };
   return (
-    <div className="bg-surface border-b border-border px-5 py-4 flex justify-between items-center">
-      <h1 className="text-lg font-bold text-primary">언제 모임?</h1>
+    <div className="bg-surface border-b border-border px-5 py-2 flex justify-between items-center">
+      <Image src="/logo.webp" alt="logo" width={80} height={28} />
       {isVote && (
         <button
           className="text-muted text-sm hover:text-text"

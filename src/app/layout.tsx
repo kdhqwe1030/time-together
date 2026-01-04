@@ -4,8 +4,8 @@ import "./globals.css";
 import Header from "../components/Header";
 
 export const metadata: Metadata = {
-  title: "언제 모임",
-  description: "간편한 일정 조율 서비스로 모임 시간을 쉽게 정하세요",
+  title: "언제모임",
+  description: "간편한 일정 조율 서비스로 모임 시간을 쉽게 정해보세요",
 };
 
 const pretendard = localFont({
