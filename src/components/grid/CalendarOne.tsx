@@ -36,7 +36,11 @@ const CalendarOne = ({
   }, [leadingBlanks, days]);
 
   // 이번 달이 “전체 선택” 상태인지 판단
-  const monthKeys = useMemo(() => days.map(toKey), [days]);
+  const monthKeys = useMemo(() => {
+    const keys = days.map(toKey);
+    return allowedKeys ? keys.filter((k) => allowedKeys.has(k)) : keys;
+  }, [days, allowedKeys]);
+
   const isAllSelectedThisMonth = useMemo(() => {
     if (monthKeys.length === 0) return false;
     return monthKeys.every((k) => selected.has(k));
@@ -62,6 +66,9 @@ const CalendarOne = ({
     const drag = dragRef.current;
     if (!drag.active) return;
     if (drag.lastKey === key) return;
+
+    if (allowedKeys && !allowedKeys.has(key)) return; //허용된 날짜만
+
     drag.lastKey = key;
     onSetDate(key, drag.mode === "add");
   };
