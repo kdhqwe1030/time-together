@@ -187,6 +187,16 @@ const CalendarOne = ({
           const isAllowed = allowedKeys?.has(key);
           const selectedThis = selected.has(key);
           const dow = d.getDay();
+
+          const base = "h-10 mx-auto w-10 rounded-xl text-sm transition";
+          const disabledCls = "text-muted/40 opacity-40 cursor-not-allowed";
+          const selectedCls = "bg-primary text-primary-foreground";
+          const normalCls = "hover:bg-surface-2 text-text";
+
+          const cls = [
+            base,
+            !isAllowed ? disabledCls : selectedThis ? selectedCls : normalCls,
+          ].join(" ");
           return (
             <button
               key={key}
@@ -221,21 +231,7 @@ const CalendarOne = ({
                 // "탭/클릭" 토글
                 onSetDate(key, !selectedThis);
               }}
-              className={[
-                "h-10 mx-auto w-10 rounded-xl text-sm transition",
-                !isAllowed
-                  ? "text-muted/40 opacity-40 cursor-not-allowed"
-                  : selectedThis
-                  ? "bg-primary text-primary-foreground"
-                  : "hover:bg-surface-2",
-                dow === 0 || dow === 6
-                  ? selectedThis
-                    ? ""
-                    : "text-error"
-                  : selectedThis
-                  ? ""
-                  : "text-text",
-              ].join(" ")}
+              className={cls}
               aria-pressed={selectedThis}
             >
               {d.getDate()}
