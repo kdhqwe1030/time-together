@@ -1,0 +1,267 @@
+"use client";
+
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { getMonthDays } from "./CalendarOne";
+import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
+
+type Props = {
+  allowedKeys?: Set<string>;
+  monthBounds?: { minMonth: Date; maxMonth: Date } | null;
+
+  totalVoters: number; // event_voters 수
+  heatByDateKey: Record<string, number>; // "YYYY-MM-DD" -> count
+  votersByDateKey: Record<string, string[]>; // 추가: "YYYY-MM-DD" -> ["qwer", ...]
+};
+
+const ResultCalendarOne = ({
+  allowedKeys,
+  monthBounds,
+  totalVoters,
+  heatByDateKey,
+  votersByDateKey,
+}: Props) => {
+  const heat = heatByDateKey ?? {};
+  const denom = Math.max(totalVoters ?? 0, 1);
+
+  const [month, setMonth] = useState(() => {
+    if (monthBounds?.minMonth) return new Date(monthBounds.minMonth);
+    const now = new Date();
+    now.setDate(1);
+    return now;
+  });
+
+  // monthBounds가 나중에 도착할 수도 있으니 한번 동기화(선택)
+  useEffect(() => {
+    if (!monthBounds?.minMonth) return;
+    setMonth(new Date(monthBounds.minMonth));
+  }, [monthBounds?.minMonth?.getTime()]);
+
+  const { first, days } = useMemo(() => getMonthDays(month), [month]);
+
+  const monthTitle = useMemo(() => {
+    const y = month.getFullYear();
+    const m = month.getMonth() + 1;
+    return `${y}년 ${m}월`;
+  }, [month]);
+
+  const week = ["일", "월", "화", "수", "목", "금", "토"];
+
+  const leadingBlanks = first.getDay();
+  const cells: Array<Date | null> = useMemo(() => {
+    const arr: Array<Date | null> = [];
+    for (let i = 0; i < leadingBlanks; i++) arr.push(null);
+    days.forEach((d) => arr.push(d));
+    while (arr.length % 7 !== 0) arr.push(null);
+    return arr;
+  }, [leadingBlanks, days]);
+
+  const canPrev = useMemo(() => {
+    if (!monthBounds) return true;
+    const prev = addMonths(month, -1);
+    return prev >= monthBounds.minMonth;
+  }, [month, monthBounds]);
+
+  const canNext = useMemo(() => {
+    if (!monthBounds) return true;
+    const next = addMonths(month, 1);
+    return next <= monthBounds.maxMonth;
+  }, [month, monthBounds]);
+
+  const [open, setOpen] = useState<null | {
+    dateKey: string;
+    anchor: HTMLElement;
+  }>(null);
+
+  const getRatio = (dateKey: string) =>
+    clamp((heat[dateKey] ?? 0) / denom, 0, 1);
+
+  const getCellStyle = (ratio: number): React.CSSProperties | undefined => {
+    if (ratio <= 0) return undefined;
+
+    // 최소 채도 + 비율 반영
+    const strength = 0.15 + ratio * 0.85; // 0.15~1.0
+    return {
+      backgroundColor: `color-mix(in srgb, white ${
+        (1 - strength) * 100
+      }%, var(--primary) ${strength * 100}%)`,
+      borderColor: `color-mix(in srgb, var(--border) 40%, var(--primary) 60%)`,
+    };
+  };
+
+  const getTextClass = (ratio: number) =>
+    ratio >= 0.5 ? "text-white" : "text-text"; // “배경 진해지면 글자 흰색”
+
+  const wrapRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const onDown = (e: MouseEvent) => {
+      if (!wrapRef.current) return;
+      if (!wrapRef.current.contains(e.target as Node)) setOpen(null);
+    };
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, []);
+
+  return (
+    <>
+      <section className="bg-surface p-4 rounded-2xl shadow shadow-black/10 mb-4">
+        <h1 className="text-text font-medium text-sm">참여 현황</h1>
+      </section>
+      <div className="bg-surface p-4 rounded-2xl shadow shadow-black/10">
+        <div className="flex items-center gap-3 mb-4">
+          <h1 className="text-text font-semibold">전체 현황</h1>
+          <span className="text-muted text-xs">
+            날짜를 탭하면 가능한 사람 목록을 볼 수 있어요
+          </span>
+        </div>
+        <div className="bg-surface p-4 rounded-2xl ">
+          {/* 헤더 */}
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              {canPrev && (
+                <button
+                  type="button"
+                  onClick={() => canPrev && setMonth((m) => addMonths(m, -1))}
+                  className="h-8 w-8 rounded-lg border border-border text-muted flex justify-center items-center disabled:opacity-40 disabled:cursor-not-allowed"
+                  aria-label="이전 달"
+                  disabled={!canPrev}
+                >
+                  <IoIosArrowBack />
+                </button>
+              )}
+
+              <div className="font-semibold text-text">{monthTitle}</div>
+              {canNext && (
+                <button
+                  type="button"
+                  onClick={() => canNext && setMonth((m) => addMonths(m, 1))}
+                  className="h-8 w-8 rounded-lg border border-border text-muted flex justify-center items-center disabled:opacity-40 disabled:cursor-not-allowed"
+                  aria-label="다음 달"
+                  disabled={!canNext}
+                >
+                  <IoIosArrowForward />
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* 요일 */}
+          <div className="grid grid-cols-7 text-center text-xs font-medium mb-2">
+            {week.map((w, idx) => (
+              <div
+                key={w}
+                className={[
+                  "py-2",
+                  idx === 0
+                    ? "text-red-500"
+                    : idx === 6
+                    ? "text-blue-500"
+                    : "text-muted",
+                ].join(" ")}
+              >
+                {w}
+              </div>
+            ))}
+          </div>
+
+          {/* 날짜 */}
+          <div className="grid grid-cols-7 gap-y-1 text-center touch-none select-none">
+            {cells.map((d, i) => {
+              if (!d) return <div key={`blank-${i}`} className="h-10" />;
+
+              const key = toKey(d);
+              const isAllowed = allowedKeys ? allowedKeys.has(key) : true;
+
+              const ratio = isAllowed ? getRatio(key) : 0;
+              const style = isAllowed ? getCellStyle(ratio) : undefined;
+              const count = isAllowed ? heat[key] ?? 0 : 0;
+              const names = isAllowed ? votersByDateKey?.[key] ?? [] : [];
+              return (
+                <div
+                  ref={wrapRef}
+                  key={key}
+                  className="relative h-10 flex justify-center"
+                >
+                  <button
+                    key={key}
+                    type="button"
+                    disabled={!isAllowed}
+                    onClick={(e) => {
+                      if (!isAllowed) return;
+                      setOpen((prev) =>
+                        prev?.dateKey === key
+                          ? null
+                          : { dateKey: key, anchor: e.currentTarget }
+                      );
+                    }}
+                    className={[
+                      "h-10 mx-auto w-10 rounded-xl text-sm transition border",
+                      isAllowed
+                        ? `${getTextClass(
+                            ratio
+                          )} border-border hover:scale-[1.02] active:scale-[0.98]`
+                        : "text-muted/40 opacity-40 cursor-not-allowed border-border",
+                    ].join(" ")}
+                    style={style}
+                    title={isAllowed ? `${count}명` : undefined}
+                  >
+                    {d.getDate()}
+                  </button>
+
+                  {/* 말풍선 */}
+                  {open?.dateKey === key && (
+                    <div
+                      className="absolute left-1/2 top-11 -translate-x-1/2 z-50
+                     min-w-35 max-w-55
+                     rounded-xl border border-border bg-surface p-3 shadow-lg"
+                    >
+                      <div className="text-xs text-muted mb-2">
+                        {names.length}명 참여
+                      </div>
+
+                      <div className="max-h-32 overflow-auto text-sm text-text space-y-1">
+                        {names.length === 0 ? (
+                          <div className="text-muted">아직 없음</div>
+                        ) : (
+                          names.map((n, idx) => (
+                            <div key={`${n}-${idx}`}>{n}</div>
+                          ))
+                        )}
+                      </div>
+
+                      {/* 말풍선 꼬리(선택) */}
+                      <div
+                        className="absolute left-1/2 -top-1 h-2 w-2 -translate-x-1/2 rotate-45
+                       border-l border-t border-border bg-surface"
+                      />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default ResultCalendarOne;
+
+function addMonths(base: Date, delta: number) {
+  const d = new Date(base);
+  d.setMonth(d.getMonth() + delta);
+  d.setDate(1);
+  return d;
+}
+
+export function toKey(d: Date) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function clamp(v: number, min: number, max: number) {
+  return Math.max(min, Math.min(max, v));
+}
