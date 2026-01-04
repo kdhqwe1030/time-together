@@ -27,3 +27,32 @@ export type VoteInitialData = {
   slots: Slot[];
   counts: Record<string, number>; // slotId -> count
 };
+
+//api 관련 type
+export type VoteCommitRequest = {
+  voterToken: string;
+  displayName: string;
+  slotIds: string[];
+};
+
+export type VoteCommitResponse = {
+  ok: true;
+};
+
+export type MyVotesResponse = {
+  ok: true;
+  eventId: string;
+  voterId: string | null;
+  displayName: string | null;
+  slotIds: string[];
+};
+
+export type VoteResultsResponse = {
+  ok: true;
+  eventId: string;
+  totalVoters: number;
+  countsBySlot: Record<string, number>;
+  votersBySlot: Record<string, string[]>;
+  heatByDateKey: Record<string, number>;
+  votersByDateKey: Record<string, string[]>;
+};
