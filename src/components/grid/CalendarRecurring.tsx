@@ -28,7 +28,6 @@ const CalendarRecurring = ({
     [selectedDays]
   );
 
-  // 드래그 상태 (CalendarOne과 동일)
   const dragRef = useRef<{
     active: boolean;
     mode: "add" | "remove";
