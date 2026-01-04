@@ -113,7 +113,7 @@ const ResultCalendarOne = ({
 
   return (
     <>
-      <section className="bg-surface p-4 rounded-2xl shadow shadow-black/10 mb-4">
+      <section className="bg-surface p-4 rounded-2xl shadow shadow-black/10 mb-4 animate-fade-in">
         <div className="flex items-center justify-between gap-3">
           <h1 className="text-text font-medium text-sm">참여 현황</h1>
 
@@ -145,7 +145,7 @@ const ResultCalendarOne = ({
             날짜를 탭하면 가능한 사람 목록을 볼 수 있어요
           </span>
         </div>
-        <div className="bg-surface p-4 rounded-2xl ">
+        <section className="bg-surface p-4 rounded-2xl animate-fade-in">
           {/* 헤더 */}
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
@@ -257,7 +257,7 @@ const ResultCalendarOne = ({
               );
             })}
           </div>
-        </div>
+        </section>
       </div>
     </>
   );
