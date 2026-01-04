@@ -10,12 +10,14 @@ const CalendarOne = ({
   onToggleAllInMonth,
   allowedKeys,
   monthBounds,
+  disablePast = false,
 }: {
   selected: Set<string>;
   onSetDate: (key: string, makeSelected: boolean) => void;
   onToggleAllInMonth: (month: Date, makeSelected: boolean) => void;
   allowedKeys?: Set<string>;
   monthBounds?: { minMonth: Date; maxMonth: Date } | null;
+  disablePast?: boolean;
 }) => {
   const [month, setMonth] = useState(() => {
     const now = new Date();
@@ -35,11 +37,27 @@ const CalendarOne = ({
     return arr;
   }, [leadingBlanks, days]);
 
-  // 이번 달이 “전체 선택” 상태인지 판단
+  // 오늘(로컬) key
+  const todayKey = useMemo(() => {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, "0");
+    const d = String(now.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  }, []);
+
+  // 이 함수 하나로 allowedKeys / disablePast 모두 통일 처리
+  const isAllowedKey = (key: string) => {
+    if (allowedKeys && !allowedKeys.has(key)) return false;
+    if (disablePast && key < todayKey) return false; // YYYY-MM-DD는 문자열 비교 OK
+    return true;
+  };
+
+  // 이번 달 “전체 선택” 상태인지 판단 (선택 가능한 날짜만 기준)
   const monthKeys = useMemo(() => {
     const keys = days.map(toKey);
-    return allowedKeys ? keys.filter((k) => allowedKeys.has(k)) : keys;
-  }, [days, allowedKeys]);
+    return keys.filter(isAllowedKey);
+  }, [days, allowedKeys, disablePast, todayKey]);
 
   const isAllSelectedThisMonth = useMemo(() => {
     if (monthKeys.length === 0) return false;
@@ -62,12 +80,13 @@ const CalendarOne = ({
     pointerId: number | null;
   }>({ active: false, mode: "add", lastKey: null, pointerId: null });
 
+  const ignoreClickRef = useRef(false);
+
   const applyKey = (key: string) => {
     const drag = dragRef.current;
     if (!drag.active) return;
     if (drag.lastKey === key) return;
-
-    if (allowedKeys && !allowedKeys.has(key)) return; //허용된 날짜만
+    if (!isAllowedKey(key)) return;
 
     drag.lastKey = key;
     onSetDate(key, drag.mode === "add");
@@ -88,22 +107,20 @@ const CalendarOne = ({
     const drag = dragRef.current;
     if (!drag.active) return;
 
-    // 모바일 터치 드래그에서 스크롤/줌 방지
     e.preventDefault();
 
     const el = document.elementFromPoint(
       e.clientX,
       e.clientY
     ) as HTMLElement | null;
-
     const key = el?.dataset?.dateKey;
     if (key) applyKey(key);
   };
-  const ignoreClickRef = useRef(false);
 
   const handlePointerUp = () => endDrag();
   const handlePointerCancel = () => endDrag();
   const handlePointerLeave = () => endDrag();
+
   const canPrev = useMemo(() => {
     if (!monthBounds) return true;
     const prev = addMonths(month, -1);
@@ -125,7 +142,7 @@ const CalendarOne = ({
             <button
               type="button"
               onClick={() => setMonth((m) => addMonths(m, -1))}
-              className="h-8 w-8 rounded-lg border border-border text-muted flex justify-center items-center  disabled:opacity-40 disabled:cursor-not-allowed"
+              className="h-8 w-8 rounded-lg border border-border text-muted flex justify-center items-center disabled:opacity-40 disabled:cursor-not-allowed"
               aria-label="이전 달"
               disabled={!canPrev}
             >
@@ -134,6 +151,7 @@ const CalendarOne = ({
           )}
 
           <div className="font-semibold text-text">{monthTitle}</div>
+
           {canNext && (
             <button
               type="button"
@@ -191,9 +209,8 @@ const CalendarOne = ({
           if (!d) return <div key={`blank-${i}`} className="h-10" />;
 
           const key = toKey(d);
-          const isAllowed = allowedKeys?.has(key);
+          const isAllowed = isAllowedKey(key);
           const selectedThis = selected.has(key);
-          const dow = d.getDay();
 
           const base = "h-10 mx-auto w-10 rounded-xl text-sm transition";
           const disabledCls = "text-muted/40 opacity-40 cursor-not-allowed";
@@ -204,6 +221,7 @@ const CalendarOne = ({
             base,
             !isAllowed ? disabledCls : selectedThis ? selectedCls : normalCls,
           ].join(" ");
+
           return (
             <button
               key={key}
@@ -211,31 +229,29 @@ const CalendarOne = ({
               data-date-key={key}
               disabled={!isAllowed}
               onPointerDown={(e) => {
+                if (!isAllowed) return;
+
                 e.preventDefault();
                 ignoreClickRef.current = true;
+
                 const drag = dragRef.current;
                 drag.active = true;
                 drag.pointerId = e.pointerId;
                 drag.lastKey = null;
 
-                // 시작 셀이 선택돼있으면 remove, 아니면 add
                 drag.mode = selectedThis ? "remove" : "add";
-
-                // 포인터 캡처
                 (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
 
-                // 시작 셀 즉시 적용
                 applyKey(key);
               }}
               onPointerEnter={() => {
-                // 마우스 드래그에선 enter가 자연스러움
+                // 마우스 드래그
                 applyKey(key);
               }}
               onClick={() => {
-                // 포인터로 발생한 클릭이면 무시 (이미 pointerdown에서 처리됨)
+                if (!isAllowed) return;
                 if (ignoreClickRef.current) return;
 
-                // "탭/클릭" 토글
                 onSetDate(key, !selectedThis);
               }}
               className={cls}
@@ -249,4 +265,5 @@ const CalendarOne = ({
     </div>
   );
 };
+
 export default CalendarOne;

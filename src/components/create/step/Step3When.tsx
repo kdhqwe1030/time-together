@@ -117,6 +117,7 @@ const Step3When = () => {
               selected={selectedDates}
               onSetDate={setDate}
               onToggleAllInMonth={toggleAllInMonth}
+              disablePast={true}
             />
           </div>
 
