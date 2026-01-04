@@ -137,7 +137,7 @@ const ResultCalendarOne = ({
           </div>
         </div>
       </section>
-      <div className="bg-surface p-4 rounded-2xl shadow shadow-black/10">
+      <div className="mt-2 bg-surface p-4 rounded-2xl shadow shadow-black/10">
         <div className="flex items-center gap-3 mb-4">
           <h1 className="text-text font-semibold">전체 현황</h1>
           <span className="text-muted text-xs">
@@ -223,7 +223,8 @@ const ResultCalendarOne = ({
                       );
                     }}
                     className={[
-                      "h-10 mx-auto w-10 rounded-xl text-sm transition border",
+                      "h-10 mx-auto w-10 rounded-xl transition border",
+                      "flex flex-col items-center justify-center",
                       isAllowed
                         ? `${getTextClassByCount(
                             count
@@ -233,7 +234,21 @@ const ResultCalendarOne = ({
                     style={style}
                     title={isAllowed ? `${count}명` : undefined}
                   >
-                    {d.getDate()}
+                    {/* 날짜 */}
+                    <span className="text-sm leading-none">{d.getDate()}</span>
+
+                    {/* 참여자 수*/}
+                    <span
+                      className={[
+                        "mt-0.5 text-[10px] leading-none",
+                        // 배경 진하면 숫자도 흰색 계열로
+                        getTextClassByCount(count) === "text-white"
+                          ? "text-white/90"
+                          : "text-muted",
+                      ].join(" ")}
+                    >
+                      {count}/{totalVoters}
+                    </span>
                   </button>
 
                   {/* 말풍선 */}
