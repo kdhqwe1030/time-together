@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-import VoteClient from "@/src/components/VoteClient";
+import OneDateVote from "@/src/components/OneDateVote";
 import { createSupabaseServer } from "@/src/lib/supabase/supabaseServer";
 
 type EventRow = {
@@ -91,5 +91,5 @@ export default async function Page({
     );
   }
 
-  return <VoteClient shareCode={shareCode} initial={initial} />;
+  return <OneDateVote shareCode={shareCode} initial={initial} />;
 }

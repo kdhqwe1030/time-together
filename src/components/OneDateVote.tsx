@@ -19,7 +19,7 @@ type Props = {
   initial: VoteInitialData;
 };
 
-const VoteClient = ({ shareCode, initial }: Props) => {
+const OneDateVote = ({ shareCode, initial }: Props) => {
   const supabase = useMemo(() => createSupabaseBrowser(), []); //realitime구독을 위한 supabse brower용
 
   const [voterToken, setVoterToken] = useState<string>(""); //내 token
@@ -461,4 +461,4 @@ const VoteClient = ({ shareCode, initial }: Props) => {
   );
 };
 
-export default VoteClient;
+export default OneDateVote;
