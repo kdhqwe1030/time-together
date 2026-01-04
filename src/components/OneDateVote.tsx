@@ -31,6 +31,7 @@ const OneDateVote = ({ shareCode, initial }: Props) => {
   const [isMod, setIsMode] = useState(false); //이름 수정
   const [results, setResults] = useState<VoteResultsResponse | null>(null); //모임 정보에서의 유력후보 결과
   const [loading, setloading] = useState(false); // 결과보기 loading
+  const [isError, setIsError] = useState(false);
 
   const info = initial.event; //모임 정보를 위한 데이터
   const MANY_TIE_THRESHOLD = 4; // 유력후보 관련 상수
@@ -420,26 +421,44 @@ const OneDateVote = ({ shareCode, initial }: Props) => {
         )}
       </div>
       {!mode ? (
-        <CreateButton
-          disabled={selectedDates.size === 0 || loading}
-          onClick={async () => {
-            setloading(true);
-            try {
-              const res = await commitVotes(shareCode, {
-                voterToken,
-                displayName: name.trim(),
-                slotIds: selectedSlotIds,
-              });
-              console.log(res);
-              setMode(true);
-              setloading(false);
-            } catch (e: any) {
-              alert(e.message ?? "오류 발생");
-            }
-          }}
-        >
-          결과보기
-        </CreateButton>
+        <div className="space-y-2">
+          {isError && (
+            <div
+              role="alert"
+              className="text-sm text-red-500 animate-fade-in-shake font-medium ml-1"
+            >
+              {name.trim() === ""
+                ? "이름을 입력해주세요."
+                : "오류가 발생했습니다."}
+            </div>
+          )}
+
+          <CreateButton
+            disabled={selectedDates.size === 0 || loading}
+            onClick={async () => {
+              if (name.trim() === "") {
+                setIsError(true);
+                return;
+              }
+              setIsError(false);
+              setloading(true);
+              try {
+                await commitVotes(shareCode, {
+                  voterToken,
+                  displayName: name.trim(),
+                  slotIds: selectedSlotIds,
+                });
+                setMode(true);
+              } catch (e: any) {
+                setIsError(true);
+              } finally {
+                setloading(false);
+              }
+            }}
+          >
+            {loading ? "저장 중..." : "결과보기"}
+          </CreateButton>
+        </div>
       ) : (
         <button
           onClick={() => {

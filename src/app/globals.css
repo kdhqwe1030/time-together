@@ -98,3 +98,31 @@ body {
 .animate-fade-in {
   animation: fadeIn 0.3s ease-in-out;
 }
+
+@keyframes fade-in-shake {
+  0% {
+    opacity: 0;
+    transform: translateY(2px) translateX(0);
+  }
+  15% {
+    opacity: 1;
+    transform: translateY(0) translateX(-2px);
+  }
+  30% {
+    transform: translateY(0) translateX(2px);
+  }
+  45% {
+    transform: translateY(0) translateX(-1px);
+  }
+  60% {
+    transform: translateY(0) translateX(1px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) translateX(0);
+  }
+}
+
+.animate-fade-in-shake {
+  animation: fade-in-shake 0.35s ease-out both;
+}
