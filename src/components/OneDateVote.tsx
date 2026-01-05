@@ -411,7 +411,7 @@ const OneDateVote = ({ shareCode, initial }: Props) => {
       </div>
       {/* 하단 고정 버튼 영역 */}
       <div className="fixed bottom-0 left-0 right-0  from-bg via-bg to-bg/80 p-4 pb-6 z-10">
-        <div className="mx-auto max-w-3xl">
+        <div className="mx-auto max-w-2xl ">
           {!mode ? (
             <div className="space-y-2">
               {isError && (

@@ -44,9 +44,9 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </head>
       <body className="min-h-screen antialiased font-pretendard">
-        <div className="flex flex-col h-screen">
+        <div className="flex flex-col h-screen mx-auto max-w-2xl">
           <Header />
-          <main className="flex-1 overflow-auto mx-auto w-full max-w-3xl bg-color-bg">
+          <main className="flex-1 overflow-auto w-full bg-color-bg">
             {children}
           </main>
         </div>
