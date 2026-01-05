@@ -51,19 +51,6 @@ const Step3When = () => {
     });
   };
 
-  const toggleAllInMonth = (month: Date, makeSelected: boolean) => {
-    const { days } = getMonthDays(month);
-    setSelectedDates((prev) => {
-      const n = new Set(prev);
-      for (const d of days) {
-        const key = toKey(d);
-        if (makeSelected) n.add(key);
-        else n.delete(key);
-      }
-      return n;
-    });
-  };
-
   const createAndGoDone = async (mode: CreateMode, payload: any) => {
     setIsLoading(true);
     try {
@@ -116,7 +103,6 @@ const Step3When = () => {
             <CalendarOne
               selected={selectedDates}
               onSetDate={setDate}
-              onToggleAllInMonth={toggleAllInMonth}
               disablePast={true}
             />
           </div>

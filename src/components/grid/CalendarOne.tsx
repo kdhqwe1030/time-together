@@ -7,14 +7,12 @@ import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
 const CalendarOne = ({
   selected,
   onSetDate,
-  onToggleAllInMonth,
   allowedKeys,
   monthBounds,
   disablePast = false,
 }: {
   selected: Set<string>;
   onSetDate: (key: string, makeSelected: boolean) => void;
-  onToggleAllInMonth: (month: Date, makeSelected: boolean) => void;
   allowedKeys?: Set<string>;
   monthBounds?: { minMonth: Date; maxMonth: Date } | null;
   disablePast?: boolean;
@@ -167,7 +165,10 @@ const CalendarOne = ({
 
         <button
           type="button"
-          onClick={() => onToggleAllInMonth(month, !isAllSelectedThisMonth)}
+          onClick={() => {
+            const makeSelected = !isAllSelectedThisMonth;
+            for (const k of monthKeys) onSetDate(k, makeSelected);
+          }}
           className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
             isAllSelectedThisMonth
               ? "bg-primary text-primary-foreground hover:bg-primary-hover"

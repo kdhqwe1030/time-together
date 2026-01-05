@@ -70,19 +70,6 @@ const OneDateVote = ({ shareCode, initial }: Props) => {
     return { minMonth, maxMonth };
   }, [allowedKeys]);
 
-  const toggleAllInMonth = (month: Date, makeSelected: boolean) => {
-    const { days } = getMonthDays(month);
-    setSelectedDates((prev) => {
-      const n = new Set(prev);
-      for (const d of days) {
-        const key = toKey(d);
-        if (!allowedKeys.has(key)) continue; //slot 없는 날짜 제외
-        if (makeSelected) n.add(key);
-        else n.delete(key);
-      }
-      return n;
-    });
-  };
   const slotIdByDate = useMemo(() => {
     const m = new Map<string, string>(); // "YYYY-MM-DD" -> slot uuid
     for (const s of initial.slots) {
@@ -400,7 +387,6 @@ const OneDateVote = ({ shareCode, initial }: Props) => {
             <CalendarOne
               selected={selectedDates}
               onSetDate={setDate}
-              onToggleAllInMonth={toggleAllInMonth}
               allowedKeys={allowedKeys}
               monthBounds={monthBounds}
             />
