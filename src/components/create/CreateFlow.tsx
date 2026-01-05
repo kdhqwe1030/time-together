@@ -28,7 +28,7 @@ export default function CreateFlow() {
         {step === 5 && <Step5TimeRange />}
         {step === 6 && <Step6Summary />}
       </div>
-      {step !== 1 && <BackButton />}
+      {step !== 1 && step !== 6 && <BackButton />}
       {isLoading && <LoadingWrapper />}
     </div>
   );
