@@ -1,12 +1,17 @@
 "use client";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
+import { useCreateStore } from "@/src/stores/createStore";
 
 const Header = () => {
+  const router = useRouter();
   const pathname = usePathname();
+  const step = useCreateStore((s) => s.step);
+  const reset = useCreateStore((s) => s.reset);
 
   const isRoot = pathname === "/";
   const isVote = pathname?.startsWith("/e/");
+  const isCreateDone = pathname === "/create" && step === 6;
   const shareUrl = isVote ? pathname.split("/")[2] : "";
 
   const onShare = async () => {
@@ -27,6 +32,12 @@ const Header = () => {
 
     await navigator.clipboard.writeText(shareUrl);
   };
+
+  const onNewCreate = () => {
+    if (isVote) router.push("/create");
+    reset();
+  };
+
   return (
     <div className="bg-surface border-b border-border px-5 py-2 flex justify-between items-center">
       <Image src="/logo.webp" alt="logo" width={80} height={28} />
@@ -36,6 +47,14 @@ const Header = () => {
           onClick={onShare}
         >
           공유
+        </button>
+      )}
+      {isCreateDone && (
+        <button
+          className="text-muted text-sm hover:text-text"
+          onClick={onNewCreate}
+        >
+          새로 만들기
         </button>
       )}
     </div>

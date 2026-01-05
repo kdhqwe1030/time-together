@@ -35,10 +35,11 @@ const Step5TimeRange = () => {
   const setTimeRange = useCreateStore((s) => s.setTimeRange);
   const setCreatedShareCode = useCreateStore((s) => s.setCreatedShareCode);
   const setCreatedMode = useCreateStore((s) => s.setCreatedMode);
+  const setIsLoading = useCreateStore((s) => s.setIsLoading);
+  const isLoading = useCreateStore((s) => s.isLoading);
 
   const [startTime, setStartTime] = useState<TimeValue>("09:00");
   const [endTime, setEndTime] = useState<TimeValue>("18:00");
-  const [loading, setLoading] = useState(false);
 
   const endMin = useMemo(() => {
     const s = toMin(startTime);
@@ -56,7 +57,7 @@ const Step5TimeRange = () => {
   };
 
   const createAndGoDone = async (mode: CreateMode, payload: any) => {
-    setLoading(true);
+    setIsLoading(true);
     try {
       const r = await createEvent(payload);
       setCreatedShareCode(r.shareCode);
@@ -65,7 +66,7 @@ const Step5TimeRange = () => {
     } catch (e: any) {
       alert(e.message ?? "생성 실패");
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -129,8 +130,8 @@ const Step5TimeRange = () => {
         </div>
       </div>
 
-      <CreateButton onClick={onCreate} disabled={loading}>
-        {loading ? "생성 중..." : "모임 일정 생성하기"}
+      <CreateButton onClick={onCreate} disabled={isLoading}>
+        {isLoading ? "생성 중..." : "모임 일정 생성하기"}
       </CreateButton>
     </div>
   );

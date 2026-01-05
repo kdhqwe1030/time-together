@@ -3,9 +3,29 @@ import localFont from "next/font/local";
 import "./globals.css";
 import Header from "../components/Header";
 
+const siteUrl = "https://xn--v52b95rqmblr.com";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
+
   title: "언제모임",
-  description: "간편한 일정 조율 서비스로 모임 시간을 쉽게 정해보세요",
+  description: "간편한 일정 조율 서비스",
+
+  keywords: ["언제모임", "일정조율", "모임", "약속", "투표"],
+
+  openGraph: {
+    siteName: "언제모임",
+    title: "언제모임",
+    description: "간편한 일정 조율 서비스",
+    images: [
+      {
+        url: "/og.png",
+        width: 1200,
+        height: 630,
+        alt: "언제모임",
+      },
+    ],
+  },
 };
 
 const pretendard = localFont({
