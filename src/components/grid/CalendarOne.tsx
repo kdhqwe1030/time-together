@@ -95,10 +95,6 @@ const CalendarOne = ({
     drag.active = false;
     drag.lastKey = null;
     drag.pointerId = null;
-
-    setTimeout(() => {
-      ignoreClickRef.current = false;
-    }, 0);
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
@@ -251,7 +247,10 @@ const CalendarOne = ({
               }}
               onClick={() => {
                 if (!isAllowed) return;
-                if (ignoreClickRef.current) return;
+                if (ignoreClickRef.current) {
+                  ignoreClickRef.current = false;
+                  return;
+                }
 
                 onSetDate(key, !selectedThis);
               }}
