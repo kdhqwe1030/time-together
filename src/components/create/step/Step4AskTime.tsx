@@ -14,11 +14,11 @@ const Step4AskTime = () => {
   const goTo = useCreateStore((s) => s.goTo);
   const setCreatedShareCode = useCreateStore((s) => s.setCreatedShareCode);
   const setCreatedMode = useCreateStore((s) => s.setCreatedMode);
-
-  const [loading, setLoading] = useState(false);
+  const setIsLoading = useCreateStore((s) => s.setIsLoading);
+  const isLoading = useCreateStore((s) => s.isLoading);
 
   const createAndGoDone = async (mode: CreateMode, payload: any) => {
-    setLoading(true);
+    setIsLoading(true);
     try {
       const r = await createEvent(payload);
       setCreatedShareCode(r.shareCode);
@@ -27,7 +27,7 @@ const Step4AskTime = () => {
     } catch (e: any) {
       alert(e.message ?? "생성 실패");
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -39,7 +39,7 @@ const Step4AskTime = () => {
           number={1}
           text="날짜만 받을래요"
           onClick={() => {
-            if (loading) return;
+            if (isLoading) return;
             createAndGoDone("ONE_DATE", {
               title,
               mode: "ONE_DATE",
@@ -51,7 +51,7 @@ const Step4AskTime = () => {
           number={2}
           text="시간도 함께 정할래요"
           onClick={() => {
-            if (loading) return;
+            if (isLoading) return;
             goTo(5);
           }}
         />

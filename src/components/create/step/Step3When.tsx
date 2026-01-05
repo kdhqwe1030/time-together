@@ -20,8 +20,8 @@ const Step3When = () => {
 
   const setCreatedShareCode = useCreateStore((s) => s.setCreatedShareCode);
   const setCreatedMode = useCreateStore((s) => s.setCreatedMode);
-
-  const [loading, setLoading] = useState(false);
+  const setIsLoading = useCreateStore((s) => s.setIsLoading);
+  const isLoading = useCreateStore((s) => s.isLoading);
 
   const [selectedDates, setSelectedDates] = useState<Set<string>>(
     () => new Set()
@@ -65,7 +65,7 @@ const Step3When = () => {
   };
 
   const createAndGoDone = async (mode: CreateMode, payload: any) => {
-    setLoading(true);
+    setIsLoading(true);
     try {
       const r = await createEvent(payload);
       setCreatedShareCode(r.shareCode);
@@ -74,7 +74,7 @@ const Step3When = () => {
     } catch (e: any) {
       alert(e.message ?? "생성 실패");
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -122,10 +122,10 @@ const Step3When = () => {
           </div>
 
           <CreateButton
-            disabled={selectedDatesCount === 0 || loading}
+            disabled={selectedDatesCount === 0 || isLoading}
             onClick={onNextOne}
           >
-            {loading ? "생성 중..." : `다음 (${selectedDatesCount}개 선택됨)`}
+            {isLoading ? "생성 중..." : `다음 (${selectedDatesCount}개 선택됨)`}
           </CreateButton>
         </>
       ) : (

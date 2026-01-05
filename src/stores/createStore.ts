@@ -26,6 +26,9 @@ type State = {
   // 결과
   createdShareCode: string | null;
 
+  // loading
+  isLoading: boolean;
+
   // actions
   goTo: (s: Step) => void;
   next: () => void;
@@ -46,6 +49,7 @@ type State = {
   setCreatedMode: (m: CreateMode) => void;
 
   setCreatedShareCode: (code: string) => void;
+  setIsLoading: (loading: boolean) => void;
   reset: () => void;
 };
 
@@ -64,6 +68,8 @@ export const useCreateStore = create<State>((set, get) => ({
   maxTime: "18:00",
 
   createdShareCode: null,
+
+  isLoading: false,
 
   goTo: (s) => set({ step: s }),
   next: () => set((s) => ({ step: (s.step + 1) as Step })),
@@ -84,6 +90,8 @@ export const useCreateStore = create<State>((set, get) => ({
 
   setCreatedShareCode: (code) => set({ createdShareCode: code }),
 
+  setIsLoading: (loading) => set({ isLoading: loading }),
+
   reset: () =>
     set({
       step: 1,
@@ -96,5 +104,6 @@ export const useCreateStore = create<State>((set, get) => ({
       createdShareCode: null,
       askTime: false,
       createdMode: null,
+      isLoading: false,
     }),
 }));
