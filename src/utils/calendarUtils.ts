@@ -148,3 +148,6 @@ export function formatDateKeyKR(dateKey: string) {
   const w = week[d.getDay()];
   return `${m}월 ${day}일 (${w})`;
 }
+
+// 2026-01-01->01.01
+export const fmtMD = (key: string) => key.slice(5).replace("-", ".");
