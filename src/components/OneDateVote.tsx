@@ -5,14 +5,14 @@ import type { VoteInitialData, VoteResultsResponse } from "../types/vote";
 import CalendarOne from "./grid/CalendarOne";
 import { MdMode } from "react-icons/md";
 
-import Tag from "./Tag";
 import CreateButton from "./create/ui/CreateButton";
 import ResultCalendarOne from "./grid/ResultCalendarOne";
 import { loadIdentity, saveName } from "../lib/getCreateVoterToken";
 import { commitVotes, fetchMyVotes, fetchResults } from "../lib/api/voteEvent";
 import { createSupabaseBrowser } from "../lib/supabase/supabaseBrowser";
 import { fmtMD, formatDateKeyKR } from "../utils/calendarUtils";
-import NamesTooltip from "./NamesTooltip";
+import NameSection from "./NameSection";
+import EventSummaryCard from "./EventSummaryCard";
 
 type Props = {
   shareCode: string;
@@ -257,124 +257,48 @@ const OneDateVote = ({ shareCode, initial }: Props) => {
       if (picked.length === 3) break;
     }
 
+    // EventSummaryCard 형태로 변환
+    const topCandidates = picked.map((dateKey) => ({
+      label: formatDateKeyKR(dateKey),
+      count: heat[dateKey] ?? 0,
+      voters: results?.votersByDateKey?.[dateKey] ?? [],
+    }));
+
     return {
       periodLabel,
       showTop3: picked.length > 0,
       tooManyTop: false,
-      top3: picked,
+      topCandidates,
     };
-  }, [results?.heatByDateKey, allowedKeys]);
+  }, [results?.heatByDateKey, results?.votersByDateKey, allowedKeys]);
 
   return (
     <div className="p-4 pb-32 flex flex-col gap-4">
       {/* 모임 정보 카드 */}
-      <section className="rounded-2xl shadow shadow-black/10 bg-surface p-4 animate-fade-in">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            {/* 제목 */}
-            <div className="text-text font-semibold truncate">{info.title}</div>
-
-            {/* 기간 (필수) */}
-            <div className="mt-1 text-sm text-muted">
-              <span className="font-light text-text">
-                {summary.periodLabel ?? "-"}
-              </span>
-            </div>
-
-            {/* 유력 후보(조건부) */}
-            <div className="mt-3 text-xs text-muted">
-              {summary.showTop3 ? (
-                <>
-                  유력 후보
-                  <div className="flex gap-4 mt-1">
-                    {summary.top3.map((item) => {
-                      const count = results?.heatByDateKey?.[item] ?? 0; // 이 날짜 가능한 사람 수
-                      const names = results?.votersByDateKey?.[item] ?? []; //툴팁을 위한 이름
-                      return (
-                        <NamesTooltip
-                          key={item}
-                          names={names}
-                          headerText=""
-                          emptyText="아직 없음"
-                        >
-                          {({ toggle }) => (
-                            <div
-                              role="button"
-                              tabIndex={0}
-                              onClick={toggle}
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter" || e.key === " ")
-                                  toggle();
-                              }}
-                              className={[
-                                "px-3 py-2 border border-border rounded-xl bg-surface",
-                                "flex flex-col items-center cursor-pointer select-none",
-                                "hover:bg-surface/60 active:scale-[0.98] transition",
-                              ].join(" ")}
-                            >
-                              <div className="font-medium text-text text-nowrap">
-                                {formatDateKeyKR(item)}
-                              </div>
-
-                              <div className="mt-0.5 text-xs text-muted">
-                                <span className="text-primary/90 font-semibold">
-                                  {count}명
-                                </span>{" "}
-                                가능
-                              </div>
-                            </div>
-                          )}
-                        </NamesTooltip>
-                      );
-                    })}
-                  </div>
-                </>
-              ) : summary.tooManyTop ? (
-                <>상위 후보가 많아요. 달력에서 편한 날을 골라주세요 🤝</>
-              ) : (
-                <>아직 투표가 없어요. 가장 먼저 투표해보세요 🗳️</>
-              )}
-            </div>
-          </div>
-
-          <div className="shrink-0">
-            <Tag text={`참여자 ${results?.totalVoters ?? 0}명`} />
-          </div>
-        </div>
-      </section>
+      <EventSummaryCard
+        title={info.title}
+        periodLabel={summary.periodLabel ?? undefined}
+        totalVoters={results?.totalVoters ?? 0}
+        topCandidates={summary.topCandidates}
+        showTop3={summary.showTop3}
+        tooManyTop={summary.tooManyTop}
+      />
 
       {/* 이름 입력 카드 */}
       {!mode ? (
-        <section className="rounded-2xl shadow shadow-black/10 bg-surface p-4 animate-fade-in">
-          <div className="text-sm font-semibold text-text">이름</div>
-          {!isMod ? (
-            <input
-              placeholder="이름을 입력하세요"
-              className={[
-                "mt-2 w-full rounded-xl border border-border bg-surface px-3 py-3",
-                "text-text placeholder:text-muted outline-none",
-                "focus:border-primary focus:ring-2 focus:ring-primary/20",
-              ].join(" ")}
-              value={name}
-              onChange={(e) => {
-                setIsError(false);
-                setName(e.target.value);
-              }}
-              onBlur={() => {
-                setIsMode(true);
-                saveName(shareCode, name);
-              }}
-            />
-          ) : (
-            <div className="mt-2 text-lg flex items-center gap-4">
-              {name}
-              <MdMode
-                className="text-primary"
-                onClick={() => setIsMode(false)}
-              />
-            </div>
-          )}
-        </section>
+        <NameSection
+          isMod={isMod}
+          name={name}
+          onChange={(e) => {
+            setIsError(false);
+            setName(e.target.value);
+          }}
+          onBlur={() => {
+            setIsMode(true);
+            saveName(shareCode, name);
+          }}
+          changeMode={() => setIsMode(false)}
+        />
       ) : (
         <></>
       )}
