@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 import OneDateVote from "@/src/components/OneDateVote";
+import TimeVote from "@/src/components/TimeVote";
 import { createSupabaseServer } from "@/src/lib/supabase/supabaseServer";
 
 type EventRow = {
@@ -91,5 +92,9 @@ export default async function Page({
     );
   }
 
-  return <OneDateVote shareCode={shareCode} initial={initial} />;
+  return initial.event.mode === "ONE_DATE" ? (
+    <OneDateVote shareCode={shareCode} initial={initial} />
+  ) : (
+    <TimeVote shareCode={shareCode} initial={initial} />
+  );
 }
