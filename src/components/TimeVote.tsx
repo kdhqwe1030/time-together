@@ -7,7 +7,7 @@ import VoteTimeGrid from "./grid/VoteTimeGrid";
 import ResultTimeGrid from "./grid/ResultTimeGrid";
 import { MdMode } from "react-icons/md";
 import CreateButton from "./create/ui/CreateButton";
-import { fetchResults, commitVotes } from "../lib/api/voteEvent";
+import { fetchResults, commitVotes, fetchMyVotes } from "../lib/api/voteEvent";
 import { createSupabaseBrowser } from "../lib/supabase/supabaseBrowser";
 import { buildHeatBuckets, getLegendSwatchStyle } from "../utils/calendarUtils";
 
@@ -40,6 +40,65 @@ const TimeVote = ({ shareCode, initial }: Props) => {
     setName(displayName);
     if (displayName !== "") setIsMode(true);
   }, [shareCode]);
+
+  // 서버에서 내 투표 기록 불러오기 (OneDateVote와 동일)
+  useEffect(() => {
+    if (!shareCode) return;
+    if (!voterToken) return;
+
+    let alive = true;
+
+    (async () => {
+      try {
+        const my = await fetchMyVotes(shareCode, voterToken);
+        if (!alive) return;
+        if (my.slotIds.length > 0) setMode(true);
+
+        // 이름도 서버값으로 보강(로컬에 없을 때만)
+        if ((!name || name.trim() === "") && my.displayName) {
+          setName(my.displayName);
+          setIsMode(true);
+          saveName(shareCode, my.displayName); // 로컬에도 다시 저장
+        }
+
+        // slotIds -> slotKey로 복구
+        const isWeekdayMode = initial.event.mode === "REC_WEEKDAYTIME";
+        const makeSlotKey = (colKey: string, minute: number) =>
+          `${colKey}|${minute}`;
+
+        // slotId -> slotKey 역매핑 생성
+        const slotKeyById = new Map<string, string>();
+        for (const s of initial.slots) {
+          if (s.start_min == null) continue;
+
+          if (isWeekdayMode) {
+            if (s.slot_type !== "WEEKDAYTIME") continue;
+            if (s.weekday == null) continue;
+            slotKeyById.set(s.id, makeSlotKey(String(s.weekday), s.start_min));
+          } else {
+            if (s.slot_type !== "DATETIME") continue;
+            if (!s.date) continue;
+            slotKeyById.set(s.id, makeSlotKey(s.date, s.start_min));
+          }
+        }
+
+        // 선택 상태 복원
+        const next = new Set<string>();
+        for (const slotId of my.slotIds) {
+          const slotKey = slotKeyById.get(slotId);
+          if (slotKey) next.add(slotKey);
+        }
+        setSelected(next);
+      } catch {
+        // 조용히 무시(토스트 원하면 여기서)
+      }
+    })();
+
+    return () => {
+      alive = false;
+    };
+    // name은 의존성에 넣으면 name set 때문에 재호출될 수 있어서 의도적으로 제외
+  }, [shareCode, voterToken, initial.slots, initial.event.mode]);
 
   // slotKey -> slotId 매핑 (VoteTimeGrid와 동일)
   const slotIdByKey = useMemo(() => {
