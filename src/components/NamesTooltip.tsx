@@ -6,6 +6,7 @@ type Props = {
   names: string[];
   headerText?: string; // 예: "2명 참여" / "2명 가능"
   emptyText?: string; // 예: "아직 없음"
+  className?: string; // wrapper className override
   children: (args: {
     open: boolean;
     toggle: () => void;
@@ -17,6 +18,7 @@ const NamesTooltip = ({
   names,
   headerText = "2명 가능",
   emptyText = "아직 없음",
+  className,
   children,
 }: Props) => {
   const [open, setOpen] = useState(false);
@@ -39,7 +41,7 @@ const NamesTooltip = ({
   }, [open]);
 
   return (
-    <div ref={rootRef} className="relative inline-flex">
+    <div ref={rootRef} className={className || "relative inline-flex"}>
       {children({ open, toggle, close })}
 
       {open && (
