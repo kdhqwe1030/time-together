@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { VoteInitialData, VoteResultsResponse } from "../types/vote";
-import NameSection from "./NameSection";
 import { loadIdentity, saveName } from "../lib/getCreateVoterToken";
 import VoteTimeGrid from "./grid/VoteTimeGrid";
 import ResultTimeGrid from "./grid/ResultTimeGrid";
@@ -9,12 +8,7 @@ import { MdMode } from "react-icons/md";
 import CreateButton from "./create/ui/CreateButton";
 import { fetchResults, commitVotes, fetchMyVotes } from "../lib/api/voteEvent";
 import { createSupabaseBrowser } from "../lib/supabase/supabaseBrowser";
-import {
-  buildHeatBuckets,
-  getLegendSwatchStyle,
-  fmtMD,
-  formatDateKeyKR,
-} from "../utils/calendarUtils";
+import { fmtMD, formatDateKeyKR } from "../utils/calendarUtils";
 import EventSummaryCard from "./EventSummaryCard";
 
 type Props = {
@@ -185,12 +179,6 @@ const TimeVote = ({ shareCode, initial }: Props) => {
     };
   }, [mode, shareCode, supabase, initial.event.id]);
 
-  // 범례 생성
-  const buckets = useMemo(
-    () => buildHeatBuckets(results?.totalVoters ?? 0),
-    [results?.totalVoters]
-  );
-
   // Summary 계산 (TimeVote는 유력 후보 없음)
   const summary = useMemo(() => {
     let periodLabel: string | null = null;
@@ -267,85 +255,34 @@ const TimeVote = ({ shareCode, initial }: Props) => {
         tooManyTop={summary?.tooManyTop ?? false}
       />
 
-      {/* 참여 현황 범례 (결과 모드일 때만) */}
-      {mode && (
-        <section className="bg-surface p-4 rounded-2xl shadow shadow-black/10 animate-fade-in">
-          <div className="flex items-center justify-between gap-3">
-            <h1 className="text-text font-medium text-sm">참여 현황</h1>
-
-            {/* 범례 */}
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-              {buckets.map((b) => (
-                <div
-                  key={b.label}
-                  className="flex items-center gap-2 text-xs text-muted"
-                >
-                  <span
-                    className="h-3 w-3 rounded-sm border border-border"
-                    style={
-                      b.strength <= 0
-                        ? undefined
-                        : getLegendSwatchStyle(b.strength)
-                    }
-                  />
-                  <span>{b.label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* 이름 입력 카드 */}
-      {!mode ? (
-        <NameSection
-          isMod={isMod}
-          name={name}
-          onChange={(e) => {
-            setIsError(false);
-            setName(e.target.value);
-          }}
-          onBlur={() => {
-            setIsMode(true);
-            saveName(shareCode, name);
-          }}
-          changeMode={() => setIsMode(false)}
-        />
-      ) : (
-        <></>
-      )}
+      {/* VoteTimeGrid (투표 모드) / ResultTimeGrid (결과 모드) */}
       <div className="mb-6">
         {!mode ? (
-          <section className="bg-surface p-4 rounded-2xl shadow shadow-black/10 animate-fade-in">
-            <div className="flex items-center gap-3 mb-4">
-              <h1 className="text-text font-semibold">시간 선택</h1>
-              <span className="text-muted text-xs">
-                가능한 시간대를 드래그해서 선택하세요 ⏰
-              </span>
-            </div>
-            <VoteTimeGrid
-              eventMode={initial.event.mode}
-              slots={initial.slots}
-              selected={selected}
-              onSelectedChange={setSelected}
-            />
-          </section>
+          <VoteTimeGrid
+            eventMode={initial.event.mode}
+            slots={initial.slots}
+            selected={selected}
+            onSelectedChange={setSelected}
+            name={name}
+            isMod={isMod}
+            onNameChange={(e) => {
+              setIsError(false);
+              setName(e.target.value);
+            }}
+            onNameBlur={() => {
+              setIsMode(true);
+              saveName(shareCode, name);
+            }}
+            onChangeMode={() => setIsMode(false)}
+          />
         ) : (
-          <section className="bg-surface p-4 rounded-2xl shadow shadow-black/10 animate-fade-in">
-            <div className="flex items-center gap-3 mb-4">
-              <h1 className="text-text font-semibold">참여 현황</h1>
-              <span className="text-muted text-xs">
-                시간을 탭하면 가능한 사람 목록을 볼 수 있어요
-              </span>
-            </div>
-            <ResultTimeGrid
-              eventMode={initial.event.mode}
-              slots={initial.slots}
-              countsBySlot={results?.countsBySlot ?? {}}
-              votersBySlot={results?.votersBySlot ?? {}}
-              totalVoters={results?.totalVoters ?? 0}
-            />
-          </section>
+          <ResultTimeGrid
+            eventMode={initial.event.mode}
+            slots={initial.slots}
+            countsBySlot={results?.countsBySlot ?? {}}
+            votersBySlot={results?.votersBySlot ?? {}}
+            totalVoters={results?.totalVoters ?? 0}
+          />
         )}
       </div>
       {/* 하단 고정 버튼 영역 */}

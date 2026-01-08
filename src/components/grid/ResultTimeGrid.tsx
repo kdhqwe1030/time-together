@@ -3,7 +3,11 @@ import React, { useMemo } from "react";
 import TimeGridBase, { TimeGridBaseRenderArgs } from "./TimeGridBase";
 import { EventMode, Slot } from "@/src/types/vote";
 import NamesTooltip from "../NamesTooltip";
-import { strengthFromCount } from "@/src/utils/calendarUtils";
+import {
+  strengthFromCount,
+  buildHeatBuckets,
+  getLegendSwatchStyle,
+} from "@/src/utils/calendarUtils";
 
 type Props = {
   eventMode: EventMode;
@@ -149,15 +153,56 @@ export default function ResultTimeGrid({
     );
   };
 
+  // 범례 생성
+  const buckets = useMemo(() => buildHeatBuckets(totalVoters), [totalVoters]);
+
   return (
-    <div className="touch-none select-none">
-      <TimeGridBase
-        columns={columns}
-        minuteStart={minuteStart}
-        minuteEnd={minuteEnd}
-        renderCell={renderCell}
-        headerMode={eventMode}
-      />
-    </div>
+    <>
+      {/* 참여 현황 범례 */}
+      <section className="bg-surface p-4 rounded-2xl shadow shadow-black/10 animate-fade-in mb-4">
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="text-text font-medium text-sm">참여 현황</h1>
+
+          {/* 범례 */}
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+            {buckets.map((b) => (
+              <div
+                key={b.label}
+                className="flex items-center gap-2 text-xs text-muted"
+              >
+                <span
+                  className="h-3 w-3 rounded-sm border border-border"
+                  style={
+                    b.strength <= 0
+                      ? undefined
+                      : getLegendSwatchStyle(b.strength)
+                  }
+                />
+                <span>{b.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 시간별 현황 */}
+      <section className="bg-surface p-4 rounded-2xl shadow shadow-black/10 animate-fade-in">
+        <div className="flex items-center gap-3 mb-4">
+          <h1 className="text-text font-semibold">전체 현황</h1>
+          <span className="text-muted text-xs">
+            시간을 탭하면 가능한 사람 목록을 볼 수 있어요
+          </span>
+        </div>
+        <div className="touch-none select-none">
+          <TimeGridBase
+            columns={columns}
+            minuteStart={minuteStart}
+            minuteEnd={minuteEnd}
+            renderCell={renderCell}
+            headerMode={eventMode}
+          />
+        </div>
+      </section>
+    </>
   );
 }

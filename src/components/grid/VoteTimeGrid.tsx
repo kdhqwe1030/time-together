@@ -2,12 +2,19 @@
 import React, { useMemo, useRef, useState } from "react";
 import TimeGridBase, { TimeGridBaseRenderArgs } from "./TimeGridBase";
 import { EventMode, Slot } from "@/src/types/vote";
+import NameSection from "../NameSection";
 
 type Props = {
   eventMode: EventMode;
   slots: Slot[];
   selected: Set<string>;
   onSelectedChange: (selected: Set<string>) => void;
+  // 이름 섹션 props
+  name: string;
+  isMod: boolean;
+  onNameChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onNameBlur: () => void;
+  onChangeMode: () => void;
 };
 
 const makeSlotKey = (colKey: string, minute: number) => `${colKey}|${minute}`;
@@ -19,6 +26,11 @@ export default function VoteTimeGrid({
   slots,
   selected,
   onSelectedChange,
+  name,
+  isMod,
+  onNameChange,
+  onNameBlur,
+  onChangeMode,
 }: Props) {
   // eventMode에 따라 동작 분기
   const isWeekdayMode = eventMode === "REC_WEEKDAYTIME";
@@ -194,25 +206,47 @@ export default function VoteTimeGrid({
   };
 
   return (
-    <div
-      className="touch-none select-none"
-      onPointerMove={onPointerMove}
-      onPointerUp={endDrag}
-      onPointerCancel={endDrag}
-      onPointerLeave={endDrag}
-    >
-      <TimeGridBase
-        columns={columns}
-        minuteStart={minuteStart}
-        minuteEnd={minuteEnd}
-        renderCell={renderCell}
-        headerMode={eventMode}
-      />
-
-      {/* 디버그/확인용 */}
-      <div className="mt-2 text-xs text-muted text-right">
-        선택: {selectedCount}칸
+    <>
+      {/* 이름 입력 카드 */}
+      <div className="mb-4">
+        <NameSection
+          isMod={isMod}
+          name={name}
+          onChange={onNameChange}
+          onBlur={onNameBlur}
+          changeMode={onChangeMode}
+        />
       </div>
-    </div>
+
+      {/* 시간 선택 */}
+      <section className="bg-surface p-4 rounded-2xl shadow shadow-black/10 animate-fade-in">
+        <div className="flex items-center gap-3 mb-4">
+          <h1 className="text-text font-semibold">시간 선택</h1>
+          <span className="text-muted text-xs">
+            가능한 시간대를 드래그해서 선택하세요 ⏰
+          </span>
+        </div>
+        <div
+          className="touch-none select-none"
+          onPointerMove={onPointerMove}
+          onPointerUp={endDrag}
+          onPointerCancel={endDrag}
+          onPointerLeave={endDrag}
+        >
+          <TimeGridBase
+            columns={columns}
+            minuteStart={minuteStart}
+            minuteEnd={minuteEnd}
+            renderCell={renderCell}
+            headerMode={eventMode}
+          />
+
+          {/* 디버그/확인용 */}
+          <div className="mt-2 text-xs text-muted text-right">
+            선택: {selectedCount}칸
+          </div>
+        </div>
+      </section>
+    </>
   );
 }
