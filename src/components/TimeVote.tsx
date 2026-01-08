@@ -9,7 +9,13 @@ import { MdMode } from "react-icons/md";
 import CreateButton from "./create/ui/CreateButton";
 import { fetchResults, commitVotes, fetchMyVotes } from "../lib/api/voteEvent";
 import { createSupabaseBrowser } from "../lib/supabase/supabaseBrowser";
-import { buildHeatBuckets, getLegendSwatchStyle } from "../utils/calendarUtils";
+import {
+  buildHeatBuckets,
+  getLegendSwatchStyle,
+  fmtMD,
+  formatDateKeyKR,
+} from "../utils/calendarUtils";
+import EventSummaryCard from "./EventSummaryCard";
 
 type Props = {
   shareCode: string;
@@ -31,6 +37,9 @@ const TimeVote = ({ shareCode, initial }: Props) => {
 
   // 결과 데이터
   const [results, setResults] = useState<VoteResultsResponse | null>(null);
+
+  const MANY_TIE_THRESHOLD = 4; // 유력후보 관련 상수
+  const info = initial.event; // 모임 정보
 
   //내가 이전에 접속했었는지
   useEffect(() => {
@@ -182,9 +191,83 @@ const TimeVote = ({ shareCode, initial }: Props) => {
     [results?.totalVoters]
   );
 
+  // Summary 계산 (TimeVote는 유력 후보 없음)
+  const summary = useMemo(() => {
+    let periodLabel: string | null = null;
+
+    if (initial.event.mode === "REC_WEEKDAYTIME") {
+      // WEEKDAYTIME: 요일 나열
+      const WEEKDAY_LABEL = ["일", "월", "화", "수", "목", "금", "토"];
+      const weekdaySet = new Set<number>();
+
+      for (const s of initial.slots) {
+        if (s.slot_type === "WEEKDAYTIME" && s.weekday != null) {
+          weekdaySet.add(s.weekday);
+        }
+      }
+
+      const weekdays = Array.from(weekdaySet).sort();
+      periodLabel =
+        weekdays.length > 0
+          ? weekdays.map((w) => WEEKDAY_LABEL[w]).join(", ")
+          : null;
+    } else {
+      // ONE_DATETIME: 날짜 범위 표현
+      // slots에서 unique 날짜 추출
+      const dateSet = new Set<string>();
+      for (const s of initial.slots) {
+        if (s.slot_type === "DATETIME" && s.date) {
+          dateSet.add(s.date);
+        }
+      }
+
+      const dateKeys = Array.from(dateSet).sort();
+      const start = dateKeys[0] ?? null;
+      const end = dateKeys[dateKeys.length - 1] ?? null;
+
+      const rangeDays =
+        start && end
+          ? Math.floor(
+              (new Date(end).getTime() - new Date(start).getTime()) /
+                (1000 * 60 * 60 * 24)
+            ) + 1
+          : 0;
+
+      const allowedCount = dateKeys.length;
+
+      periodLabel =
+        start && end
+          ? [
+              `${fmtMD(start)} ~ ${fmtMD(end)}`,
+              rangeDays === allowedCount
+                ? `(${rangeDays}일)`
+                : `(${rangeDays}일 중 ${allowedCount}일)`,
+            ].join(" ")
+          : null;
+    }
+
+    // TimeVote는 유력 후보 표시 안 함
+    return {
+      periodLabel,
+      showTop3: false,
+      tooManyTop: false,
+      topCandidates: [],
+    };
+  }, [initial.slots, initial.event.mode]);
+
   return (
     <div className="p-4 pb-32 flex flex-col gap-4">
-      {/* 참여 현황 섹션 (결과 모드일 때만) */}
+      {/* 모임 정보 카드 */}
+      <EventSummaryCard
+        title={info.title}
+        periodLabel={summary?.periodLabel ?? undefined}
+        totalVoters={results?.totalVoters ?? 0}
+        topCandidates={summary?.topCandidates ?? []}
+        showTop3={summary?.showTop3 ?? false}
+        tooManyTop={summary?.tooManyTop ?? false}
+      />
+
+      {/* 참여 현황 범례 (결과 모드일 때만) */}
       {mode && (
         <section className="bg-surface p-4 rounded-2xl shadow shadow-black/10 animate-fade-in">
           <div className="flex items-center justify-between gap-3">
