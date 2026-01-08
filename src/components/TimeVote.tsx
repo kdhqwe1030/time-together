@@ -7,7 +7,7 @@ import VoteTimeGrid from "./grid/VoteTimeGrid";
 import ResultTimeGrid from "./grid/ResultTimeGrid";
 import { MdMode } from "react-icons/md";
 import CreateButton from "./create/ui/CreateButton";
-import { fetchResults } from "../lib/api/voteEvent";
+import { fetchResults, commitVotes } from "../lib/api/voteEvent";
 import { createSupabaseBrowser } from "../lib/supabase/supabaseBrowser";
 import { buildHeatBuckets, getLegendSwatchStyle } from "../utils/calendarUtils";
 
@@ -234,19 +234,11 @@ const TimeVote = ({ shareCode, initial }: Props) => {
                   setloading(true);
                   try {
                     // API 요청
-                    const res = await fetch(`/api/events/${shareCode}/votes`, {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                        voterToken,
-                        displayName: name.trim(),
-                        slotIds: selectedSlotIds,
-                      }),
+                    await commitVotes(shareCode, {
+                      voterToken,
+                      displayName: name.trim(),
+                      slotIds: selectedSlotIds,
                     });
-
-                    if (!res.ok) {
-                      throw new Error("투표 저장 실패");
-                    }
 
                     setMode(true);
                   } catch (e: any) {
