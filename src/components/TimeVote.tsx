@@ -209,7 +209,7 @@ const TimeVote = ({ shareCode, initial }: Props) => {
       const weekdays = Array.from(weekdaySet).sort();
       periodLabel =
         weekdays.length > 0
-          ? weekdays.map((w) => WEEKDAY_LABEL[w]).join(", ")
+          ? weekdays.map((w) => WEEKDAY_LABEL[w]).join("· ")
           : null;
     } else {
       // ONE_DATETIME: 날짜 범위 표현
