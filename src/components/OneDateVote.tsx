@@ -13,6 +13,7 @@ import { commitVotes, fetchMyVotes, fetchResults } from "../lib/api/voteEvent";
 import { createSupabaseBrowser } from "../lib/supabase/supabaseBrowser";
 import { fmtMD, formatDateKeyKR } from "../utils/calendarUtils";
 import NamesTooltip from "./NamesTooltip";
+import NameSection from "./NameSection";
 
 type Props = {
   shareCode: string;
@@ -345,36 +346,19 @@ const OneDateVote = ({ shareCode, initial }: Props) => {
 
       {/* 이름 입력 카드 */}
       {!mode ? (
-        <section className="rounded-2xl shadow shadow-black/10 bg-surface p-4 animate-fade-in">
-          <div className="text-sm font-semibold text-text">이름</div>
-          {!isMod ? (
-            <input
-              placeholder="이름을 입력하세요"
-              className={[
-                "mt-2 w-full rounded-xl border border-border bg-surface px-3 py-3",
-                "text-text placeholder:text-muted outline-none",
-                "focus:border-primary focus:ring-2 focus:ring-primary/20",
-              ].join(" ")}
-              value={name}
-              onChange={(e) => {
-                setIsError(false);
-                setName(e.target.value);
-              }}
-              onBlur={() => {
-                setIsMode(true);
-                saveName(shareCode, name);
-              }}
-            />
-          ) : (
-            <div className="mt-2 text-lg flex items-center gap-4">
-              {name}
-              <MdMode
-                className="text-primary"
-                onClick={() => setIsMode(false)}
-              />
-            </div>
-          )}
-        </section>
+        <NameSection
+          isMod={isMod}
+          name={name}
+          onChange={(e) => {
+            setIsError(false);
+            setName(e.target.value);
+          }}
+          onBlur={() => {
+            setIsMode(true);
+            saveName(shareCode, name);
+          }}
+          changeMode={() => setIsMode(false)}
+        />
       ) : (
         <></>
       )}
