@@ -2,6 +2,8 @@
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import { useCreateStore } from "@/src/stores/createStore";
+import { RxHamburgerMenu } from "react-icons/rx";
+import { useState } from "react";
 
 const Header = () => {
   const router = useRouter();
@@ -14,6 +16,7 @@ const Header = () => {
   const isCreateDone = pathname === "/create" && step === 6;
   const shareUrl = isVote ? pathname.split("/")[2] : "";
 
+  const [isOpen, setIsOpen] = useState(false);
   const onShare = async () => {
     if (!shareUrl) return;
 
@@ -39,7 +42,11 @@ const Header = () => {
   };
 
   return (
-    <div className="bg-surface border-b border-border px-5 py-2 flex justify-between items-center">
+    <div
+      className={`bg-surface px-5 py-2 flex justify-between items-center${
+        isRoot ? " fixed top-0 left-0 right-0 z-50 mx-auto max-w-2xl" : " border-b border-border"
+      }`}
+    >
       <Image src="/logo.webp" alt="logo" width={80} height={28} />
       {isVote && (
         <button
@@ -56,6 +63,23 @@ const Header = () => {
         >
           새로 만들기
         </button>
+      )}
+      {!isCreateDone && (
+        <div className="relative">
+          <button
+            className="p-1.5 border rounded-lg border-border"
+            onClick={() => setIsOpen((prev) => !prev)}
+          >
+            <RxHamburgerMenu />
+          </button>
+          {isOpen && (
+            <div className="absolute bg-surface shadow-lg rounded-xl z-50 p-2 right-0  text-nowrap text-center text-sm">
+              <div className="border-b border-border p-0.5">새 일정 만들기</div>
+              <div className="border-b border-border p-0.5">사용법</div>
+              <div className="p-0.5">문의하기</div>
+            </div>
+          )}
+        </div>
       )}
     </div>
   );
