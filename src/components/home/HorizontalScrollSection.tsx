@@ -51,12 +51,12 @@ export default function HorizontalScrollSection({
 
       const pad = Math.max(8, Math.floor((viewW - cardW) / 2));
 
-      // ✅ 핵심: state 기다리지 말고 DOM에 즉시 적용
+      // 핵심: state 기다리지 말고 DOM에 즉시 적용
       track.style.paddingLeft = `${pad}px`;
       track.style.paddingRight = `${pad}px`;
       setSidePad(pad);
 
-      // ✅ padding 적용된 상태에서 scrollWidth 측정
+      // padding 적용된 상태에서 scrollWidth 측정
       const newMaxX = Math.max(0, track.scrollWidth - viewW);
       setMaxX(newMaxX);
 
@@ -81,7 +81,7 @@ export default function HorizontalScrollSection({
 
         const rect = section.getBoundingClientRect();
 
-        // ✅ 가로 이동량만큼만 세로 스크롤하면 끝
+        // 가로 이동량만큼만 세로 스크롤하면 끝
         const usable = Math.max(1, maxX);
         const progress = Math.min(Math.max(-rect.top / usable, 0), 1);
 
@@ -103,7 +103,7 @@ export default function HorizontalScrollSection({
       className={`relative w-full ${isGray ? "bg-none" : "bg-surface"} `}
       style={{ height: sectionHeight ? `${sectionHeight}px` : "100dvh" }}
     >
-      <div className="sticky top-0 h-dvh overflow-hidden">
+      <div className="sticky top-0 h-dvh overflow-hidden ">
         <div className="mx-auto w-full max-w-2xl px-6 pt-16">
           {kicker ? (
             <div className="text-sm font-semibold text-primary">{kicker}</div>
