@@ -10,7 +10,7 @@ import {
   strengthFromCount,
   toKey,
 } from "@/src/utils/calendarUtils";
-import NamesTooltip from "../NamesTooltip";
+import NamesTooltip from "../ui/NamesTooltip";
 
 type Props = {
   allowedKeys?: Set<string>;

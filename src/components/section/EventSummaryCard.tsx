@@ -1,7 +1,7 @@
 "use client";
 
-import Tag from "./Tag";
-import NamesTooltip from "./NamesTooltip";
+import Tag from "../ui/Tag";
+import NamesTooltip from "../ui/NamesTooltip";
 
 type TopCandidate = {
   label: string; // "1월 8일 (수)" 형태

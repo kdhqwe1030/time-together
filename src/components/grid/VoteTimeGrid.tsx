@@ -1,8 +1,8 @@
 "use client";
-import React, { useMemo, useRef, useState } from "react";
+import React, { useMemo, useRef, useState, useCallback } from "react";
 import TimeGridBase, { TimeGridBaseRenderArgs } from "./TimeGridBase";
 import { EventMode, Slot } from "@/src/types/vote";
-import NameSection from "../NameSection";
+import NameSection from "../section/NameSection";
 
 type Props = {
   eventMode: EventMode;
@@ -73,8 +73,17 @@ export default function VoteTimeGrid({
   // 3) columns 생성
   const columns = useMemo(() => {
     if (isWeekdayMode) {
-      // WEEKDAYTIME: 0~6 요일
-      return Array.from({ length: 7 }, (_, w) => ({
+      // WEEKDAYTIME: slots에 실제 존재하는 weekday만 추출
+      const weekdaySet = new Set<number>();
+      for (const s of slots) {
+        if (s.slot_type === "WEEKDAYTIME" && s.weekday != null) {
+          weekdaySet.add(s.weekday);
+        }
+      }
+
+      // 추출한 weekday를 정렬해서 columns 생성
+      const weekdays = Array.from(weekdaySet).sort();
+      return weekdays.map((w) => ({
         key: String(w),
         hdate: "",
         hday: WEEKDAY_LABEL[w] ?? String(w),
@@ -106,12 +115,15 @@ export default function VoteTimeGrid({
   }, [slots, isWeekdayMode]);
 
   // ===== 선택 상태는 부모(TimeVote)에서 관리 =====
-  const setSlot = (slotKey: string, makeSelected: boolean) => {
-    const n = new Set(selected);
-    if (makeSelected) n.add(slotKey);
-    else n.delete(slotKey);
-    onSelectedChange(n);
-  };
+  const setSlot = useCallback(
+    (slotKey: string, makeSelected: boolean) => {
+      const n = new Set(selected);
+      if (makeSelected) n.add(slotKey);
+      else n.delete(slotKey);
+      onSelectedChange(n);
+    },
+    [selected, onSelectedChange]
+  );
 
   // (드래그 로직 그대로)
   const dragRef = useRef<{
@@ -125,30 +137,39 @@ export default function VoteTimeGrid({
   });
   const ignoreClickRef = useRef(false);
 
-  const applyKey = (slotKey: string) => {
-    const drag = dragRef.current;
-    if (!drag.active) return;
-    if (drag.lastKey === slotKey) return;
-    drag.lastKey = slotKey;
-    setSlot(slotKey, drag.mode === "add");
-  };
+  // window 레벨 pointerMove/pointerUp 이벤트 (드래그 중일 때만)
+  React.useEffect(() => {
+    const onPointerMove = (e: PointerEvent) => {
+      if (!dragRef.current.active) return;
+      const el = document.elementFromPoint(
+        e.clientX,
+        e.clientY
+      ) as HTMLElement | null;
+      const btn = el?.closest?.("[data-slot-key]") as HTMLElement | null;
+      const key = btn?.dataset?.slotKey;
+      if (key) {
+        const drag = dragRef.current;
+        if (drag.lastKey === key) return;
+        drag.lastKey = key;
+        setSlot(key, drag.mode === "add");
+      }
+    };
 
-  const endDrag = () => {
-    dragRef.current.active = false;
-    dragRef.current.lastKey = null;
-  };
+    const onPointerUp = () => {
+      dragRef.current.active = false;
+      dragRef.current.lastKey = null;
+    };
 
-  const onPointerMove = (e: React.PointerEvent) => {
-    if (!dragRef.current.active) return;
-    e.preventDefault();
-    const el = document.elementFromPoint(
-      e.clientX,
-      e.clientY
-    ) as HTMLElement | null;
-    const btn = el?.closest?.("[data-slot-key]") as HTMLElement | null;
-    const key = btn?.dataset?.slotKey;
-    if (key) applyKey(key);
-  };
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerUp);
+    window.addEventListener("pointercancel", onPointerUp);
+
+    return () => {
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+      window.removeEventListener("pointercancel", onPointerUp);
+    };
+  }, [setSlot]);
 
   // 선택된 개수 표시용
   const selectedCount = useMemo(() => {
@@ -172,7 +193,7 @@ export default function VoteTimeGrid({
         data-slot-key={slotKey}
         disabled={disabled}
         className={[
-          "w-full h-full",
+          "w-full h-full touch-none",
           disabled
             ? "bg-transparent"
             : selectedThis
@@ -183,15 +204,16 @@ export default function VoteTimeGrid({
         onPointerDown={(e) => {
           if (disabled) return;
           e.preventDefault();
+          e.stopPropagation();
           ignoreClickRef.current = true;
 
           const drag = dragRef.current;
           drag.active = true;
-          drag.lastKey = null;
+          drag.lastKey = slotKey;
           drag.mode = selectedThis ? "remove" : "add";
 
-          (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-          applyKey(slotKey);
+          // 즉시 적용
+          setSlot(slotKey, drag.mode === "add");
         }}
         onClick={() => {
           if (disabled) return;
@@ -226,13 +248,7 @@ export default function VoteTimeGrid({
             가능한 시간대를 드래그해서 선택하세요 ⏰
           </span>
         </div>
-        <div
-          className="touch-none select-none"
-          onPointerMove={onPointerMove}
-          onPointerUp={endDrag}
-          onPointerCancel={endDrag}
-          onPointerLeave={endDrag}
-        >
+        <div className="select-none">
           <TimeGridBase
             columns={columns}
             minuteStart={minuteStart}
