@@ -1,6 +1,6 @@
-import Footer from "../components/Footer";
-import Hero from "../components/Hero";
-import HorizontalScrollSection from "../components/HorizontalScrollSection";
+import Footer from "../components/home/Footer";
+import Hero from "../components/home/Hero";
+import HorizontalScrollSection from "../components/home/HorizontalScrollSection";
 
 export default function Home() {
   return (

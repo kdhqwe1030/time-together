@@ -2,7 +2,7 @@
 import React, { useMemo } from "react";
 import TimeGridBase, { TimeGridBaseRenderArgs } from "./TimeGridBase";
 import { EventMode, Slot } from "@/src/types/vote";
-import NamesTooltip from "../NamesTooltip";
+import NamesTooltip from "../ui/NamesTooltip";
 import {
   strengthFromCount,
   buildHeatBuckets,

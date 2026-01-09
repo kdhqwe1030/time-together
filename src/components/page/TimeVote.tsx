@@ -1,15 +1,19 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
-import { VoteInitialData, VoteResultsResponse } from "../types/vote";
-import { loadIdentity, saveName } from "../lib/getCreateVoterToken";
-import VoteTimeGrid from "./grid/VoteTimeGrid";
-import ResultTimeGrid from "./grid/ResultTimeGrid";
+import { VoteInitialData, VoteResultsResponse } from "../../types/vote";
+import { loadIdentity, saveName } from "../../lib/getCreateVoterToken";
+import VoteTimeGrid from "../grid/VoteTimeGrid";
+import ResultTimeGrid from "../grid/ResultTimeGrid";
 import { MdMode } from "react-icons/md";
-import CreateButton from "./create/ui/CreateButton";
-import { fetchResults, commitVotes, fetchMyVotes } from "../lib/api/voteEvent";
-import { createSupabaseBrowser } from "../lib/supabase/supabaseBrowser";
-import { fmtMD, formatDateKeyKR } from "../utils/calendarUtils";
-import EventSummaryCard from "./EventSummaryCard";
+import CreateButton from "../create/ui/CreateButton";
+import {
+  fetchResults,
+  commitVotes,
+  fetchMyVotes,
+} from "../../lib/api/voteEvent";
+import { createSupabaseBrowser } from "../../lib/supabase/supabaseBrowser";
+import { fmtMD, formatDateKeyKR } from "../../utils/calendarUtils";
+import EventSummaryCard from "../section/EventSummaryCard";
 
 type Props = {
   shareCode: string;

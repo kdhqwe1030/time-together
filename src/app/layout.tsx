@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import Header from "../components/Header";
+import Header from "../components/ui/Header";
 
 const siteUrl = "https://xn--v52b95rqmblr.com";
 
@@ -46,9 +46,7 @@ export default function RootLayout({
       <body className="min-h-screen antialiased font-pretendard">
         <div className="flex flex-col min-h-screen mx-auto max-w-2xl">
           <Header />
-          <main className="flex-1 w-full bg-color-bg">
-            {children}
-          </main>
+          <main className="flex-1 w-full bg-color-bg">{children}</main>
         </div>
       </body>
     </html>

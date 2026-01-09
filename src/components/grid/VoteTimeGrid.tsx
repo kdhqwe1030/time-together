@@ -2,7 +2,7 @@
 import React, { useMemo, useRef, useState, useCallback } from "react";
 import TimeGridBase, { TimeGridBaseRenderArgs } from "./TimeGridBase";
 import { EventMode, Slot } from "@/src/types/vote";
-import NameSection from "../NameSection";
+import NameSection from "../section/NameSection";
 
 type Props = {
   eventMode: EventMode;

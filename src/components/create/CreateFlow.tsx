@@ -9,7 +9,7 @@ import Step4AskTime from "./step/Step4AskTime";
 import Step5TimeRange from "./step/Step5TimeRange";
 import BackButton from "./ui/BackButton";
 import Step6Summary from "./step/Step6Summary";
-import LoadingWrapper from "../LoadingWrapper";
+import LoadingWrapper from "../ui/LoadingWrapper";
 
 const TOTAL_STEPS = 6;
 

@@ -1,8 +1,8 @@
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-import OneDateVote from "@/src/components/OneDateVote";
-import TimeVote from "@/src/components/TimeVote";
+import OneDateVote from "@/src/components/page/OneDateVote";
+import TimeVote from "@/src/components/page/TimeVote";
 import { createSupabaseServer } from "@/src/lib/supabase/supabaseServer";
 
 type EventRow = {

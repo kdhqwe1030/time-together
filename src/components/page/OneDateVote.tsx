@@ -1,18 +1,22 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import type { VoteInitialData, VoteResultsResponse } from "../types/vote";
-import CalendarOne from "./grid/CalendarOne";
+import type { VoteInitialData, VoteResultsResponse } from "../../types/vote";
+import CalendarOne from "../grid/CalendarOne";
 import { MdMode } from "react-icons/md";
 
-import CreateButton from "./create/ui/CreateButton";
-import ResultCalendarOne from "./grid/ResultCalendarOne";
-import { loadIdentity, saveName } from "../lib/getCreateVoterToken";
-import { commitVotes, fetchMyVotes, fetchResults } from "../lib/api/voteEvent";
-import { createSupabaseBrowser } from "../lib/supabase/supabaseBrowser";
-import { fmtMD, formatDateKeyKR } from "../utils/calendarUtils";
-import NameSection from "./NameSection";
-import EventSummaryCard from "./EventSummaryCard";
+import CreateButton from "../create/ui/CreateButton";
+import ResultCalendarOne from "../grid/ResultCalendarOne";
+import { loadIdentity, saveName } from "../../lib/getCreateVoterToken";
+import {
+  commitVotes,
+  fetchMyVotes,
+  fetchResults,
+} from "../../lib/api/voteEvent";
+import { createSupabaseBrowser } from "../../lib/supabase/supabaseBrowser";
+import { fmtMD, formatDateKeyKR } from "../../utils/calendarUtils";
+import NameSection from "../section/NameSection";
+import EventSummaryCard from "../section/EventSummaryCard";
 
 type Props = {
   shareCode: string;
