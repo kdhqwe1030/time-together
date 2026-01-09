@@ -1,3 +1,4 @@
+import Footer from "../components/Footer";
 import Hero from "../components/Hero";
 import HorizontalScrollSection from "../components/HorizontalScrollSection";
 
@@ -35,6 +36,7 @@ export default function Home() {
           { src: "/regular-2.webp", alt: "시간대 투표" },
         ]}
       />
+      <Footer />
     </div>
   );
 }
