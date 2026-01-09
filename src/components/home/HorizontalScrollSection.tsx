@@ -112,16 +112,16 @@ export default function HorizontalScrollSection({
             {title}
           </h2>
           {desc ? (
-            <p className="mt-4 text-base md:text-lg text-muted leading-relaxed">
+            <p className="mt-4 text-base md:text-lg text-muted leading-relaxed whitespace-pre-line">
               {desc}
             </p>
           ) : null}
         </div>
 
-        <div ref={viewportRef} className="mx-auto mt-10 w-full max-w-2xl">
+        <div ref={viewportRef} className="mx-auto w-full max-w-2xl">
           <div
             ref={trackRef}
-            className="flex items-center gap-4 will-change-transform"
+            className="flex items-center gap-10 will-change-transform"
             style={{
               paddingLeft: sidePad,
               paddingRight: sidePad,

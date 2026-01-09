@@ -74,7 +74,7 @@ export default function Hero() {
   return (
     <div
       id="hero-section"
-      className="relative w-full bg-surface overflow-hidden"
+      className="relative w-full bg-surface overflow-hidden "
       style={{ height: "100dvh" }}
     >
       {/* 상단 텍스트 */}
@@ -88,7 +88,7 @@ export default function Hero() {
             <span className="inline-block w-0.5 h-10 md:h-16 bg-gray-900 ml-1 animate-blink align-bottom" />
           )}
         </h1>
-        <p className="text-lg md:text-xl text-gray-700 leading-relaxed">
+        <p className="text-lg md:text-xl text-gray-700 leading-relaxed animate-fade-in">
           함께하는 시간을 더욱 특별하게
           <br />
           모임 일정을 쉽고 간편하게 조율하세요
@@ -97,7 +97,7 @@ export default function Hero() {
 
       {/* 시작하기 버튼 - 중간에 배치 */}
       <div
-        className="fixed z-10 left-1/2 -translate-x-1/2"
+        className="fixed z-10 left-1/2 -translate-x-1/2 animate-fade-in"
         style={{
           top: "85%",
           opacity: buttonOpacity,
