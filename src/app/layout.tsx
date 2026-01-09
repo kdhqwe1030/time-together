@@ -9,22 +9,56 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
 
   title: "언제모임",
-  description: "간편한 일정 조율 서비스",
+  description:
+    "바쁜 일정 속에서도 약속 잡기 쉽게, 로그인 없이 링크로 바로 투표하고 몇 번의 클릭만으로 모임 일정을 완성하는 일정 조율 서비스입니다.",
 
-  keywords: ["언제모임", "일정조율", "모임", "약속", "투표"],
+  keywords: [
+    "언제모임",
+    "일정 조율",
+    "일정 투표",
+    "모임 일정",
+    "약속 잡기",
+    "시간 맞추기",
+    "when2meet",
+    "모임 투표",
+    "스케줄 조율",
+    "친구 약속",
+  ],
+
+  // canonical(대표 URL) 권장
+  alternates: {
+    canonical: "/",
+  },
 
   openGraph: {
+    type: "website",
+    url: siteUrl,
     siteName: "언제모임",
     title: "언제모임",
-    description: "간편한 일정 조율 서비스",
+    description:
+      "바쁜 일정 속에서도 약속 잡기 쉽게, 로그인 없이 링크로 바로 투표하고 몇 번의 클릭만으로 모임 일정을 완성하는 일정 조율 서비스입니다.",
+    locale: "ko_KR",
     images: [
       {
-        url: "/og.png",
+        url: new URL("/og.png", siteUrl).toString(),
         width: 1200,
         height: 630,
-        alt: "언제모임",
+        alt: "언제모임 - 간편한 일정 조율",
       },
     ],
+  },
+  // Twitter 카드
+  twitter: {
+    card: "summary_large_image",
+    title: "언제모임",
+    description:
+      "로그인 없이 링크 하나로 투표하고, 30초 만에 모임 일정을 만드는 간편한 일정 조율 서비스.",
+    images: [new URL("/og.png", siteUrl).toString()],
+  },
+
+  // 아이콘/파비콘
+  icons: {
+    icon: "/favicon.ico",
   },
 };
 
