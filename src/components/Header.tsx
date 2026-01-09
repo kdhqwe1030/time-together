@@ -15,6 +15,12 @@ const Header = () => {
   const isVote = pathname?.startsWith("/e/");
   const isCreateDone = pathname === "/create" && step === 6;
   const shareUrl = isVote ? pathname.split("/")[2] : "";
+  const goHome = () => router.push("/");
+  const goCreate = () => router.push("/create");
+  const goContact = () => {
+    const url = "  https://forms.gle/5zFRjd4dbAi6zavy9";
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
 
   const [isOpen, setIsOpen] = useState(false);
   const onShare = async () => {
@@ -44,10 +50,18 @@ const Header = () => {
   return (
     <div
       className={`bg-surface px-5 py-2 flex justify-between items-center${
-        isRoot ? " fixed top-0 left-0 right-0 z-50 mx-auto max-w-2xl" : " border-b border-border"
+        isRoot
+          ? " fixed top-0 left-0 right-0 z-50 mx-auto max-w-2xl"
+          : " border-b border-border"
       }`}
     >
-      <Image src="/logo.webp" alt="logo" width={80} height={28} />
+      <Image
+        src="/logo.webp"
+        alt="logo"
+        width={80}
+        height={28}
+        onClick={goHome}
+      />
       {isVote && (
         <button
           className="text-muted text-sm hover:text-text"
@@ -74,9 +88,15 @@ const Header = () => {
           </button>
           {isOpen && (
             <div className="absolute bg-surface shadow-lg rounded-xl z-50 p-2 right-0  text-nowrap text-center text-sm">
-              <div className="border-b border-border p-0.5">새 일정 만들기</div>
-              <div className="border-b border-border p-0.5">사용법</div>
-              <div className="p-0.5">문의하기</div>
+              <div className="border-b border-border p-0.5" onClick={goHome}>
+                홈
+              </div>
+              <div className="border-b border-border p-0.5" onClick={goCreate}>
+                새 일정 만들기
+              </div>
+              <div className="p-0.5" onClick={goContact}>
+                문의하기
+              </div>
             </div>
           )}
         </div>
