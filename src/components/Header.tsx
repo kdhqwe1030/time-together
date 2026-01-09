@@ -18,7 +18,7 @@ const Header = () => {
   const goHome = () => router.push("/");
   const goCreate = () => router.push("/create");
   const goContact = () => {
-    const url = "  https://forms.gle/5zFRjd4dbAi6zavy9";
+    const url = "https://forms.gle/5zFRjd4dbAi6zavy9";
     window.open(url, "_blank", "noopener,noreferrer");
   };
 
