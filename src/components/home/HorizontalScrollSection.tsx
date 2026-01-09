@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useFadeIn } from "@/src/hooks/useFadeIn";
 
 type PhoneItem = { src: string; alt?: string };
 
@@ -28,6 +29,9 @@ export default function HorizontalScrollSection({
   const [x, setX] = useState(0);
   const [sidePad, setSidePad] = useState(0);
   const [maxX, setMaxX] = useState(0);
+
+  // Fade-in 효과
+  const { ref: fadeInRef, isVisible } = useFadeIn({ threshold: 0.4 });
 
   const prefersReducedMotion = useMemo(() => {
     if (typeof window === "undefined") return false;
@@ -104,7 +108,12 @@ export default function HorizontalScrollSection({
       style={{ height: sectionHeight ? `${sectionHeight}px` : "100dvh" }}
     >
       <div className="sticky top-0 h-dvh overflow-hidden ">
-        <div className="mx-auto w-full max-w-2xl px-6 pt-16">
+        <div
+          ref={fadeInRef}
+          className={`mx-auto w-full max-w-2xl px-6 pt-16 transition-all duration-700 ${
+            isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+          }`}
+        >
           {kicker ? (
             <div className="text-sm font-semibold text-primary">{kicker}</div>
           ) : null}
