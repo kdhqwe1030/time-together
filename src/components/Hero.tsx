@@ -1,8 +1,10 @@
 "use client";
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Hero() {
+  const router = useRouter();
   const [progress, setProgress] = useState(0);
   const [typedText, setTypedText] = useState("");
   const [showCursor, setShowCursor] = useState(true);
@@ -67,6 +69,7 @@ export default function Hero() {
   const imageScale = 1 + progress * 0.5 + tallT * 0.12; // 긴 폰일수록 살짝 더 확대
   const imageTranslateY = -(progress * 30);
   const textOpacity = progress >= 0.5 ? 0 : 1;
+  const buttonOpacity = progress >= 0.2 ? 0 : 1;
 
   return (
     <div
@@ -92,7 +95,23 @@ export default function Hero() {
         </p>
       </div>
 
-      {/* 하단 이미지: “높이” 기준으로 크게 잡고, cover로 채움 */}
+      {/* 시작하기 버튼 - 중간에 배치 */}
+      <div
+        className="fixed z-10 left-1/2 -translate-x-1/2"
+        style={{
+          top: "85%",
+          opacity: buttonOpacity,
+        }}
+      >
+        <button
+          onClick={() => router.push("/create")}
+          className="px-6 py-2 bg-primary text-primary-foreground rounded-2xl text-lg font-semibold hover:bg-primary-hover transition-colors shadow-lg"
+        >
+          모임 일정 만들기
+        </button>
+      </div>
+
+      {/* 하단 이미지: "높이" 기준으로 크게 잡고, cover로 채움 */}
       <div className="absolute inset-x-0 bottom-0 flex justify-center">
         <div
           className="w-full max-w-2xl"
