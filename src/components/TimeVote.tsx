@@ -25,7 +25,6 @@ const TimeVote = ({ shareCode, initial }: Props) => {
   const [isMod, setIsMode] = useState(false); //이름 수정
   const [isError, setIsError] = useState(false);
   const [loading, setloading] = useState(false); // 결과보기 loading
-
   // VoteTimeGrid 선택 상태
   const [selected, setSelected] = useState<Set<string>>(new Set());
 

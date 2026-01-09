@@ -69,8 +69,17 @@ export default function ResultTimeGrid({
   // 3) columns 생성
   const columns = useMemo(() => {
     if (isWeekdayMode) {
-      // WEEKDAYTIME: 0~6 요일
-      return Array.from({ length: 7 }, (_, w) => ({
+      // WEEKDAYTIME: slots에 실제 존재하는 weekday만 추출
+      const weekdaySet = new Set<number>();
+      for (const s of slots) {
+        if (s.slot_type === "WEEKDAYTIME" && s.weekday != null) {
+          weekdaySet.add(s.weekday);
+        }
+      }
+
+      // 추출한 weekday를 정렬해서 columns 생성
+      const weekdays = Array.from(weekdaySet).sort();
+      return weekdays.map((w) => ({
         key: String(w),
         hdate: "",
         hday: WEEKDAY_LABEL[w] ?? String(w),
