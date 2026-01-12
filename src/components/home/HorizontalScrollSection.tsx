@@ -109,10 +109,10 @@ export default function HorizontalScrollSection({
       className={`relative w-full ${isGray ? "bg-none" : "bg-surface"} `}
       style={{ height: sectionHeight ? `${sectionHeight}px` : "100dvh" }}
     >
-      <div className="sticky top-0 h-dvh overflow-hidden ">
+      <div className="sticky top-0 h-dvh overflow-hidden flex flex-col">
         <div
           ref={fadeInRef}
-          className={`mx-auto w-full max-w-2xl px-6 pt-16 transition-all duration-700 ${
+          className={`mx-auto w-full max-w-2xl px-6 pt-16 pb-4 transition-all duration-700 ${
             isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
           }`}
         >
@@ -129,38 +129,42 @@ export default function HorizontalScrollSection({
           ) : null}
         </div>
 
-        <div ref={viewportRef} className="mx-auto w-full max-w-2xl">
-          <div
-            ref={trackRef}
-            className="flex items-center gap-24 will-change-transform"
-            style={{
-              paddingLeft: sidePad,
-              paddingRight: sidePad,
-              transform: prefersReducedMotion
-                ? undefined
-                : `translateX(${-x}px)`,
-            }}
-          >
-            {phones.map((p, idx) => (
-              <div
-                key={`${p.src}-${idx}`}
-                data-phone-card="true"
-                className="
+        <div ref={viewportRef} className="w-full flex-1 max-w-2xl ">
+          <div className="h-full flex items-center">
+            <div
+              ref={trackRef}
+              className="flex items-center gap-24 md:gap-64 will-change-transform"
+              style={{
+                paddingLeft: sidePad,
+                paddingRight: sidePad,
+                transform: prefersReducedMotion
+                  ? undefined
+                  : `translateX(${-x}px)`,
+              }}
+            >
+              {phones.map((p, idx) => (
+                <div
+                  key={`${p.src}-${idx}`}
+                  data-phone-card="true"
+                  className="
                   relative shrink-0
-                  w-[75vh] max-w-75
+                  h-[min(70dvh,560px)]  
+                  w-auto              
+                  max-w-[85vw]         
                   aspect-9/19
                 "
-              >
-                <Image
-                  src={p.src}
-                  alt={p.alt ?? `phone-${idx + 1}`}
-                  fill
-                  priority={idx === 0}
-                  className="object-contain "
-                  sizes="(max-width: 640px) 65vw, (max-width: 768px) 55vw, (max-width: 1024px) 45vw, 256px"
-                />
-              </div>
-            ))}
+                >
+                  <Image
+                    src={p.src}
+                    alt={p.alt ?? `phone-${idx + 1}`}
+                    fill
+                    priority={idx === 0}
+                    className="object-contain"
+                    sizes="(max-width: 640px) 85vw, 320px"
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
