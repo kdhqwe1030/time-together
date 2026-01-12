@@ -3,7 +3,7 @@ import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import { useCreateStore } from "@/src/stores/createStore";
 import { RxHamburgerMenu } from "react-icons/rx";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const Header = () => {
   const router = useRouter();
@@ -23,6 +23,26 @@ const Header = () => {
   };
 
   const [isOpen, setIsOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+
+  const closeAnd = (fn: () => void) => () => {
+    setIsOpen(false);
+    fn();
+  };
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const onPointerDown = (e: PointerEvent) => {
+      const el = menuRef.current;
+      if (!el) return;
+      if (!el.contains(e.target as Node)) setIsOpen(false); // ref 바깥 클릭이면 닫기
+    };
+
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => document.removeEventListener("pointerdown", onPointerDown);
+  }, [isOpen]);
+
   const onShare = async () => {
     if (!shareUrl) return;
 
@@ -80,7 +100,7 @@ const Header = () => {
           </button>
         )}
         {!isCreateDone && (
-          <div className="relative">
+          <div className="relative" ref={menuRef}>
             <button
               className="p-1.5 border rounded-lg border-border"
               onClick={() => setIsOpen((prev) => !prev)}
@@ -88,17 +108,20 @@ const Header = () => {
               <RxHamburgerMenu />
             </button>
             {isOpen && (
-              <div className="absolute bg-surface shadow-lg rounded-xl z-50 p-2 right-0  text-nowrap text-center text-sm">
-                <div className="border-b border-border p-0.5" onClick={goHome}>
+              <div className="absolute bg-surface shadow-lg rounded-xl z-50 p-2 right-0 text-nowrap text-center text-sm">
+                <div
+                  className="border-b border-border p-0.5"
+                  onClick={closeAnd(goHome)}
+                >
                   홈
                 </div>
                 <div
                   className="border-b border-border p-0.5"
-                  onClick={goCreate}
+                  onClick={closeAnd(goCreate)}
                 >
                   새 일정 만들기
                 </div>
-                <div className="p-0.5" onClick={goContact}>
+                <div className="p-0.5" onClick={closeAnd(goContact)}>
                   문의하기
                 </div>
               </div>

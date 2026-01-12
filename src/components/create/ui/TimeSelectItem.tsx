@@ -118,18 +118,17 @@ export default function TimeSelectItem({
         </div>
       </button>
 
-      {/* ✅ Bottom Sheet */}
       {open && (
         <div
           className="fixed inset-0 z-50"
           aria-modal="true"
           role="dialog"
-          onMouseDown={(e) => {
-            // 바깥 클릭 닫기
-            if (e.target === e.currentTarget) close();
-          }}
-          onTouchStart={(e) => {
-            if (e.target === e.currentTarget) close();
+          onPointerDown={(e) => {
+            if (
+              sheetRef.current &&
+              !sheetRef.current.contains(e.target as Node)
+            )
+              close();
           }}
         >
           {/* overlay */}
@@ -139,6 +138,7 @@ export default function TimeSelectItem({
           <div
             ref={sheetRef}
             className="absolute bottom-0 left-0 right-0 rounded-t-2xl bg-surface border border-border shadow-2xl"
+            onPointerDown={(e) => e.stopPropagation()}
           >
             <div className="px-4 pt-4 pb-2">
               <div className="mx-auto h-1.5 w-10 rounded-full bg-border mb-3" />

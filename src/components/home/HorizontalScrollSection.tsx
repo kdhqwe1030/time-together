@@ -53,12 +53,14 @@ export default function HorizontalScrollSection({
       const cardW =
         firstCard?.getBoundingClientRect().width ?? Math.min(360, viewW);
 
-      const pad = Math.max(8, Math.floor((viewW - cardW) / 2));
+      const padLeft = Math.max(8, Math.floor((viewW - cardW) / 2));
+      // 마지막 카드가 가운데 오도록 paddingRight도 동일하게 설정
+      const padRight = padLeft;
 
       // 핵심: state 기다리지 말고 DOM에 즉시 적용
-      track.style.paddingLeft = `${pad}px`;
-      track.style.paddingRight = `${pad}px`;
-      setSidePad(pad);
+      track.style.paddingLeft = `${padLeft}px`;
+      track.style.paddingRight = `${padRight}px`;
+      setSidePad(padLeft);
 
       // padding 적용된 상태에서 scrollWidth 측정
       const newMaxX = Math.max(0, track.scrollWidth - viewW);
@@ -107,17 +109,17 @@ export default function HorizontalScrollSection({
       className={`relative w-full ${isGray ? "bg-none" : "bg-surface"} `}
       style={{ height: sectionHeight ? `${sectionHeight}px` : "100dvh" }}
     >
-      <div className="sticky top-0 h-dvh overflow-hidden ">
+      <div className="sticky top-0 h-dvh overflow-hidden flex flex-col">
         <div
           ref={fadeInRef}
-          className={`mx-auto w-full max-w-2xl px-6 pt-16 transition-all duration-700 ${
+          className={`mx-auto w-full max-w-2xl px-6 pt-16 pb-4 transition-all duration-700 ${
             isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
           }`}
         >
           {kicker ? (
             <div className="text-sm font-semibold text-primary">{kicker}</div>
           ) : null}
-          <h2 className="mt-2 text-2xl md:text-5xl font-extrabold text-text leading-tight">
+          <h2 className="mt-2 text-2xl md:text-4xl font-extrabold text-text leading-tight">
             {title}
           </h2>
           {desc ? (
@@ -127,38 +129,42 @@ export default function HorizontalScrollSection({
           ) : null}
         </div>
 
-        <div ref={viewportRef} className="mx-auto w-full max-w-2xl">
-          <div
-            ref={trackRef}
-            className="flex items-center gap-10 will-change-transform"
-            style={{
-              paddingLeft: sidePad,
-              paddingRight: sidePad,
-              transform: prefersReducedMotion
-                ? undefined
-                : `translateX(${-x}px)`,
-            }}
-          >
-            {phones.map((p, idx) => (
-              <div
-                key={`${p.src}-${idx}`}
-                data-phone-card="true"
-                className="
+        <div ref={viewportRef} className="w-full flex-1 max-w-2xl ">
+          <div className="h-full flex items-center">
+            <div
+              ref={trackRef}
+              className="flex items-center gap-24 md:gap-64 will-change-transform"
+              style={{
+                paddingLeft: sidePad,
+                paddingRight: sidePad,
+                transform: prefersReducedMotion
+                  ? undefined
+                  : `translateX(${-x}px)`,
+              }}
+            >
+              {phones.map((p, idx) => (
+                <div
+                  key={`${p.src}-${idx}`}
+                  data-phone-card="true"
+                  className="
                   relative shrink-0
-                  w-[72vw] max-w-90
+                  h-[min(70dvh,560px)]  
+                  w-auto              
+                  max-w-[85vw]         
                   aspect-9/19
                 "
-              >
-                <Image
-                  src={p.src}
-                  alt={p.alt ?? `phone-${idx + 1}`}
-                  fill
-                  priority={idx === 0}
-                  className="object-contain"
-                  sizes="(max-width: 768px) 72vw, 360px"
-                />
-              </div>
-            ))}
+                >
+                  <Image
+                    src={p.src}
+                    alt={p.alt ?? `phone-${idx + 1}`}
+                    fill
+                    priority={idx === 0}
+                    className="object-contain"
+                    sizes="(max-width: 640px) 85vw, 320px"
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
