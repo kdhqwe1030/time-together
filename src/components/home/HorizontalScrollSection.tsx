@@ -53,12 +53,14 @@ export default function HorizontalScrollSection({
       const cardW =
         firstCard?.getBoundingClientRect().width ?? Math.min(360, viewW);
 
-      const pad = Math.max(8, Math.floor((viewW - cardW) / 2));
+      const padLeft = Math.max(8, Math.floor((viewW - cardW) / 2));
+      // 마지막 카드가 가운데 오도록 paddingRight도 동일하게 설정
+      const padRight = padLeft;
 
       // 핵심: state 기다리지 말고 DOM에 즉시 적용
-      track.style.paddingLeft = `${pad}px`;
-      track.style.paddingRight = `${pad}px`;
-      setSidePad(pad);
+      track.style.paddingLeft = `${padLeft}px`;
+      track.style.paddingRight = `${padRight}px`;
+      setSidePad(padLeft);
 
       // padding 적용된 상태에서 scrollWidth 측정
       const newMaxX = Math.max(0, track.scrollWidth - viewW);
@@ -117,7 +119,7 @@ export default function HorizontalScrollSection({
           {kicker ? (
             <div className="text-sm font-semibold text-primary">{kicker}</div>
           ) : null}
-          <h2 className="mt-2 text-2xl md:text-5xl font-extrabold text-text leading-tight">
+          <h2 className="mt-2 text-2xl md:text-4xl font-extrabold text-text leading-tight">
             {title}
           </h2>
           {desc ? (
@@ -130,7 +132,7 @@ export default function HorizontalScrollSection({
         <div ref={viewportRef} className="mx-auto w-full max-w-2xl">
           <div
             ref={trackRef}
-            className="flex items-center gap-10 will-change-transform"
+            className="flex items-center gap-24 will-change-transform"
             style={{
               paddingLeft: sidePad,
               paddingRight: sidePad,
@@ -145,7 +147,7 @@ export default function HorizontalScrollSection({
                 data-phone-card="true"
                 className="
                   relative shrink-0
-                  w-[72vw] max-w-90
+                  w-[75vh] max-w-75
                   aspect-9/19
                 "
               >
@@ -154,8 +156,8 @@ export default function HorizontalScrollSection({
                   alt={p.alt ?? `phone-${idx + 1}`}
                   fill
                   priority={idx === 0}
-                  className="object-contain"
-                  sizes="(max-width: 768px) 72vw, 360px"
+                  className="object-contain "
+                  sizes="(max-width: 640px) 65vw, (max-width: 768px) 55vw, (max-width: 1024px) 45vw, 256px"
                 />
               </div>
             ))}
