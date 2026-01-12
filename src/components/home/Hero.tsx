@@ -82,16 +82,16 @@ export default function Hero() {
         className="fixed z-10 left-1/2 -translate-x-1/2 w-full max-w-2xl px-6"
         style={{ top: "8rem", opacity: textOpacity }}
       >
-        <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
+        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
           {typedText || "\u00A0"}
           {showCursor && (
-            <span className="inline-block w-0.5 h-10 md:h-16 bg-gray-900 ml-1 animate-blink align-bottom" />
+            <span className="inline-block w-0.5 h-10 md:h-12 bg-gray-900 ml-1 animate-blink align-bottom" />
           )}
         </h1>
         <p className="text-lg md:text-xl text-gray-700 leading-relaxed animate-fade-in">
           함께하는 시간을 더욱 특별하게
           <br />
-          모임 일정을 쉽고 간편하게 조율하세요
+          모임 일정을 쉽고 간편하게 조율하세요.
         </p>
       </div>
 
