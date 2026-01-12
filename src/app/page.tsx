@@ -21,9 +21,10 @@ export default function Home() {
         title={`몇 번의 클릭으로 모임 일정 만들기`}
         desc={`몇 번의 클릭만으로 모임 일정이 바로 만들어져요.\n완성된 링크를 바로 공유해보세요.`}
         phones={[
-          { src: "/create-1.webp", alt: "모임 이름 입력" },
-          { src: "/create-2.webp", alt: "날짜 선택" },
-          { src: "/create-3.webp", alt: "링크 생성 완료" },
+          { src: "/create-1.webp", alt: "모임 타입 선택" },
+          { src: "/create-2.webp", alt: "모임 이름 입력" },
+          { src: "/create-3.webp", alt: "날짜 선택" },
+          { src: "/create-4.webp", alt: "링크 생성 완료" },
         ]}
         isGray={true}
       />
