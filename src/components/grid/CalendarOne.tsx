@@ -1,7 +1,7 @@
 "use client";
 
 import { addMonths, getMonthDays, toKey } from "@/src/utils/calendarUtils";
-import React, { useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
 
 const CalendarOne = ({
@@ -18,10 +18,22 @@ const CalendarOne = ({
   disablePast?: boolean;
 }) => {
   const [month, setMonth] = useState(() => {
+    // monthBounds가 있으면 선택 가능한 첫 달로 시작
+    if (monthBounds) {
+      return new Date(monthBounds.minMonth);
+    }
+    // 없으면 오늘 날짜 기준
     const now = new Date();
     now.setDate(1);
     return now;
   });
+
+  // monthBounds가 변경되면 첫 달로 이동
+  useEffect(() => {
+    if (monthBounds) {
+      setMonth(new Date(monthBounds.minMonth));
+    }
+  }, [monthBounds]);
 
   const { first, days } = useMemo(() => getMonthDays(month), [month]);
 
