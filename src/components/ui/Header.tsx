@@ -69,7 +69,7 @@ const Header = () => {
 
   return (
     <div
-      className={`bg-surface px-5 py-2 flex justify-between items-center${
+      className={`bg-surface px-5 py-2 flex justify-between items-center cursor-pointer ${
         isRoot
           ? " fixed top-0 left-0 right-0 z-50 mx-auto max-w-2xl"
           : " border-b border-border"
@@ -102,7 +102,7 @@ const Header = () => {
         {!isCreateDone && (
           <div className="relative" ref={menuRef}>
             <button
-              className="p-1.5 border rounded-lg border-border"
+              className="p-1.5 border rounded-lg border-border cursor-pointer"
               onClick={() => setIsOpen((prev) => !prev)}
             >
               <RxHamburgerMenu />
@@ -110,18 +110,21 @@ const Header = () => {
             {isOpen && (
               <div className="absolute bg-surface shadow-lg rounded-xl z-50 p-2 right-0 text-nowrap text-center text-sm">
                 <div
-                  className="border-b border-border p-0.5"
+                  className="border-b border-border p-0.5 cursor-pointer"
                   onClick={closeAnd(goHome)}
                 >
                   홈
                 </div>
                 <div
-                  className="border-b border-border p-0.5"
+                  className="border-b border-border p-0.5 cursor-pointer"
                   onClick={closeAnd(goCreate)}
                 >
                   새 일정 만들기
                 </div>
-                <div className="p-0.5" onClick={closeAnd(goContact)}>
+                <div
+                  className="p-0.5 cursor-pointer"
+                  onClick={closeAnd(goContact)}
+                >
                   문의하기
                 </div>
               </div>
